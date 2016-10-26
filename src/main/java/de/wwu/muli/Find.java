@@ -1,5 +1,5 @@
 package de.wwu.muli;
 
-enum Find {
+public enum Find {
     All, First
 }

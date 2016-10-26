@@ -1,5 +1,5 @@
 package de.wwu.muli;
 
-enum SearchStrategy {
+public enum SearchStrategy {
     IterativeDeepening
 }
