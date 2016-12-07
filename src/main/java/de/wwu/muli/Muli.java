@@ -17,12 +17,21 @@ public class Muli {
     }
 
     public static Solution[] search(Find b, Supplier searchArea) {
-        // TODO: iterate through multiple results of searchArea.get() == true => not anymore!
-        // TODO: maybe this is only a stub? or is the inner one a stub? ... hm
         return search(b, SearchStrategy.IterativeDeepening, searchArea);
     }
 
-    public native static Solution muli(Supplier searchArea);
+    public static Solution muli(Supplier searchArea) {
+        ExecutionMode previousMode = getVMExecutionMode();
+        setVMExecutionMode(ExecutionMode.SYMBOLIC);
+        Object retval = searchArea.get(); // Maybe transfer call to VM? this should be easy
+        setVMExecutionMode(ExecutionMode.NORMAL);
+        // TODO use retval or maybe get solutions from VM?
+        // TODO consider multiple executions of get() in case of backtracking!
+        return new Solution();
+    }
+
+    private static native ExecutionMode getVMExecutionMode();
+    private static native void setVMExecutionMode(ExecutionMode mode);
 
     // TODO: maybe add intermediate type representing the (continuable) search space
     //public static Solution[] muli(int labelling, Supplier<Boolean> searchArea) {
