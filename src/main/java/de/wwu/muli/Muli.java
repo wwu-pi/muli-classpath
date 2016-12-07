@@ -24,7 +24,7 @@ public class Muli {
         ExecutionMode previousMode = getVMExecutionMode();
         setVMExecutionMode(ExecutionMode.SYMBOLIC);
         Object retval = searchArea.get(); // Maybe transfer call to VM? this should be easy
-        setVMExecutionMode(ExecutionMode.NORMAL);
+        setVMExecutionMode(previousMode);
         // TODO use retval or maybe get solutions from VM?
         // TODO consider multiple executions of get() in case of backtracking!
         return new Solution();
