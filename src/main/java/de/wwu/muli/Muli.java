@@ -21,13 +21,20 @@ public class Muli {
     }
 
     public static Solution muli(Supplier searchArea) {
-        ExecutionMode previousMode = getVMExecutionMode();
+        ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous state of VM
         setVMExecutionMode(ExecutionMode.SYMBOLIC);
-        Object retval = searchArea.get(); // Maybe transfer call to VM? this should be easy
-        setVMExecutionMode(previousMode);
-        // TODO use retval or maybe get solutions from VM?
-        // TODO consider multiple executions of get() in case of backtracking!
-        return new Solution();
+        setVMSymbolicExecutionTreeRoot(); // Record start of symbolic execution (translates into a choice point)
+        try {
+            Object retval = searchArea.get(); // Maybe transfer call to VM? this should be easy
+            recordSolutionAndBacktrackVM(retval);
+        } catch(Throwable e) {
+            recordSolutionAndBacktrackVM(e);
+        }
+        setVMExecutionMode(previousMode); // Restore previous state of VM
+
+
+
+        return getVMRecordedSolutions();
     }
 
     private static native ExecutionMode getVMExecutionMode();
