@@ -19,16 +19,16 @@ public class Muli {
     }
 
     public static Solution muli(Supplier searchArea) {
-        ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous state of VM
+        ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
         setVMExecutionMode(ExecutionMode.SYMBOLIC);
-        setVMSymbolicExecutionTreeRoot(); // Record start of symbolic execution (translates into a choice point)
+
         try {
             Object retval = searchArea.get(); // Maybe transfer call to VM? this should be easy
             recordSolutionAndBacktrackVM(retval);
         } catch(Throwable e) {
             recordExceptionAndBacktrackVM(e);
         }
-        setVMExecutionMode(previousMode); // Restore previous state of VM
+        setVMExecutionMode(previousMode); // Restore previous mode of VM
 
         return getVMRecordedSolutions(); // TODO -> array.
     }
