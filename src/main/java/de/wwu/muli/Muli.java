@@ -45,7 +45,4 @@ public class Muli {
     private static native Solution getVMRecordedSolutions();
 
     // TODO: maybe add intermediate type representing the (continuable) search space
-    //public static Solution[] muli(int labelling, Supplier<Boolean> searchArea) {
-    //	return null;
-    //}
 }
