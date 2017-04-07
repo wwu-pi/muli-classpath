@@ -7,18 +7,16 @@ public class Muli {
     public static Solution[] search(Find b, SearchStrategy c, Supplier searchArea) {
         // TODO: iterate through multiple results of searchArea.get() == true => not anymore!
         // TODO: maybe this is only a stub? or is the inner one a stub? ... hm
-        if (b == Find.First) {
-            return new Solution[]{Muli.muli(searchArea)};
-        } else {
-            throw new IllegalArgumentException("not supported yet. :(");
-        }
+        return Muli.muli(searchArea);
+        // TODO make Find preference available to VM!
+        // TODO make SearchStrategy preference available to VM!
     }
 
     public static Solution[] search(Find b, Supplier searchArea) {
         return search(b, SearchStrategy.IterativeDeepening, searchArea);
     }
 
-    public static Solution muli(Supplier searchArea) {
+    public static Solution[] muli(Supplier searchArea) {
         ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
         setVMExecutionMode(ExecutionMode.SYMBOLIC);
 
@@ -42,7 +40,7 @@ public class Muli {
     private static native void recordSolutionAndBacktrackVM(Object solution);
     private static native void recordExceptionAndBacktrackVM(Throwable exception);
 
-    private static native Solution getVMRecordedSolutions();
+    private static native Solution[] getVMRecordedSolutions();
 
     // TODO: maybe add intermediate type representing the (continuable) search space
 }
