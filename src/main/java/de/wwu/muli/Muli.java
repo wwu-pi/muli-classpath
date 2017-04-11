@@ -37,7 +37,7 @@ public class Muli {
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static native MuliFailException fail();
+    public static native void fail() throws MuliFailException;
 
     private static native ExecutionMode getVMExecutionMode();
     private static native void setVMExecutionMode(ExecutionMode mode);
