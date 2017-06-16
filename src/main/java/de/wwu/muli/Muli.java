@@ -1,5 +1,6 @@
 package de.wwu.muli;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class Muli {
@@ -34,6 +35,15 @@ public class Muli {
         setVMExecutionMode(previousMode); // Restore previous mode of VM
 
         return getVMRecordedSolutions();
+    }
+
+    public static <T> T getOneValue(Supplier<T> searchArea) {
+        Solution<T>[] search = Muli.search(Find.First, searchArea);
+        return Arrays.stream(search)
+                .filter(x -> !x.isExceptionControlFlow)
+                .findFirst()
+                .get()
+                .value;
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
