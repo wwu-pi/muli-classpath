@@ -38,8 +38,8 @@ public class Muli {
     }
 
     public static <T> T getOneValue(Supplier<T> searchArea) {
-        Solution<T>[] search = Muli.search(Find.First, searchArea);
-        return Arrays.stream(search)
+        Solution<T>[] search = Muli.<T>search(Find.First, searchArea);
+        return (T)Arrays.stream(search)
                 .filter(x -> !x.isExceptionControlFlow)
                 .findFirst()
                 .get()
