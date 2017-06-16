@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 public class Muli {
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static Solution[] search(Find b, SearchStrategy c, Supplier searchArea) {
+    public static <T> Solution<T>[] search(Find b, SearchStrategy c, Supplier<T> searchArea) {
         // TODO: iterate through multiple results of searchArea.get() == true => not anymore!
         // TODO: maybe this is only a stub? or is the inner one a stub? ... hm
         return Muli.muli(searchArea);
@@ -14,12 +14,12 @@ public class Muli {
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static Solution[] search(Find b, Supplier searchArea) {
+    public static <T> Solution<T>[] search(Find b, Supplier<T> searchArea) {
         return search(b, SearchStrategy.IterativeDeepening, searchArea);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static Solution[] muli(Supplier searchArea) {
+    public static <T> Solution<T>[] muli(Supplier<T> searchArea) {
         ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
         setVMExecutionMode(ExecutionMode.SYMBOLIC);
 
@@ -37,7 +37,7 @@ public class Muli {
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static native void fail() throws MuliFailException;
+    public static native MuliFailException fail(); // Can't be declared as "throws MuliFailE..." because compiler does not recognise it as invariant
 
     private static native ExecutionMode getVMExecutionMode();
     private static native void setVMExecutionMode(ExecutionMode mode);
@@ -45,7 +45,7 @@ public class Muli {
     private static native void recordSolutionAndBacktrackVM(Object solution);
     private static native void recordExceptionAndBacktrackVM(Throwable exception);
 
-    private static native Solution[] getVMRecordedSolutions();
+    private static native <T> Solution<T>[] getVMRecordedSolutions();
 
     // TODO: maybe add intermediate type representing the (continuable) search space
 }

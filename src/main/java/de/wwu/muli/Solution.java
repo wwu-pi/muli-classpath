@@ -1,11 +1,20 @@
 package de.wwu.muli;
 
-public class Solution {
-    public final Object value;
+public class Solution<T> {
+    // TODO besser: subtypen
+    public final T value;
+    public final Throwable exceptionValue;
+
     public final boolean isExceptionControlFlow;
 
-    public Solution(Object value, boolean isExceptionControlFlow) {
+    public Solution(T value) {
         this.value = value;
-        this.isExceptionControlFlow = isExceptionControlFlow;
+        this.exceptionValue = null;
+        this.isExceptionControlFlow = false;
+    }
+    public Solution(Throwable value) {
+        this.exceptionValue = value;
+        this.value = null;
+        this.isExceptionControlFlow = true;
     }
 }
