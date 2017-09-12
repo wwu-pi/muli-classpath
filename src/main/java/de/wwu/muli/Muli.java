@@ -49,6 +49,9 @@ public class Muli {
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static native MuliFailException fail(); // Can't be declared as "throws MuliFailE..." because compiler does not recognise it as invariant
 
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
+    public static native void label();
+
     private static native ExecutionMode getVMExecutionMode();
     private static native void setVMExecutionMode(ExecutionMode mode);
 
