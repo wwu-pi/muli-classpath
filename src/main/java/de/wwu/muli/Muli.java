@@ -2,11 +2,12 @@ package de.wwu.muli;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class Muli {
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Solution<T>[] search(Find b, SearchStrategy c, Supplier<T> searchArea) {
+    public static <T> Stream<Solution<T>> search(Find b, SearchStrategy c, Supplier<T> searchArea) {
         // TODO: iterate through multiple results of searchArea.get() == true => not anymore!
         // TODO: maybe this is only a stub? or is the inner one a stub? ... hm
         return Muli.muli(searchArea);
@@ -15,12 +16,12 @@ public class Muli {
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Solution<T>[] search(Find b, Supplier<T> searchArea) {
+    public static <T> Stream<Solution<T>> search(Find b, Supplier<T> searchArea) {
         return search(b, SearchStrategy.IterativeDeepening, searchArea);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Solution<T>[] muli(Supplier<T> searchArea) {
+    public static <T> Stream<Solution<T>> muli(Supplier<T> searchArea) {
         ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
         setVMExecutionMode(ExecutionMode.SYMBOLIC);
 
@@ -34,12 +35,12 @@ public class Muli {
         }
         setVMExecutionMode(previousMode); // Restore previous mode of VM
 
-        return getVMRecordedSolutions();
+        return Arrays.stream(getVMRecordedSolutions());
     }
 
     public static <T> T getOneValue(Supplier<T> searchArea) {
-        Solution<T>[] search = Muli.<T>search(Find.First, searchArea);
-        return (T)Arrays.stream(search)
+        Stream<Solution<T>> search = Muli.<T>search(Find.First, searchArea);
+        return search
                 .filter(x -> !x.isExceptionControlFlow)
                 .findFirst()
                 .get()
