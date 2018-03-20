@@ -1,4 +1,4 @@
-package de.wwu.muli;
+package de.wwu.muli.solution;
 
 /**
  * Exception that signifies an invalid result. Created by Muli.fail()

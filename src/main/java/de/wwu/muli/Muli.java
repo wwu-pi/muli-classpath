@@ -1,5 +1,8 @@
 package de.wwu.muli;
 
+import de.wwu.muli.solution.MuliFailException;
+import de.wwu.muli.solution.Solution;
+
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -41,7 +44,7 @@ public class Muli {
     public static <T> T getOneValue(Supplier<T> searchArea) {
         Stream<Solution<T>> search = Muli.<T>search(Find.First, searchArea);
         return search
-                .filter(x -> !x.isExceptionControlFlow)
+                .filter(x -> !x.isExceptionControlFlow())
                 .findFirst()
                 .get()
                 .value;
