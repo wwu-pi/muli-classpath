@@ -12,38 +12,25 @@ import java.util.stream.StreamSupport;
 public class Muli {
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Stream<Solution<T>> search(Find b, SearchStrategy c, Supplier<T> searchArea) {
-        // TODO: iterate through multiple results of searchArea.get() == true => not anymore!
-        // TODO: maybe this is only a stub? or is the inner one a stub? ... hm
-        return Muli.muli(searchArea);
-        // TODO make Find preference available to VM!
-        // TODO make SearchStrategy preference available to VM!
+    public static <T> Stream<Solution<T>> search(Find find, SearchStrategy strategy, Supplier<T> searchRegion) {
+        return Muli.muli(searchRegion, strategy);
+        // TODO Use find preference to stop search and/or filter results (cf. getOneValue et al).
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Stream<Solution<T>> search(Find b, Supplier<T> searchArea) {
-        return search(b, SearchStrategy.IterativeDeepening, searchArea);
+    public static <T> Stream<Solution<T>> search(Find find, Supplier<T> searchRegion) {
+        return search(find, SearchStrategy.IterativeDeepening, searchRegion);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Stream<Solution<T>> muli(Supplier<T> searchArea) {
-        //ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
-        //setVMExecutionMode(ExecutionMode.SYMBOLIC);
-
-        return StreamSupport.stream(new SolutionIterator<T>(searchArea), false);
-
-        //try {
-        //    Object retval = searchArea.get();
-        //    recordSolutionAndBacktrackVM(retval);
-        //} catch(Throwable e) {
-            // This happens if searchArea.get() threw an exception.
-            // However, we consider exceptions as part of the solution.
-        //    recordExceptionAndBacktrackVM(e);
-        //}
-        //setVMExecutionMode(previousMode); // Restore previous mode of VM
-
-        //return Arrays.stream(getVMRecordedSolutions());
+    public static <T> Stream<Solution<T>> muli(Supplier<T> searchRegion, SearchStrategy strategy) {
+        // Create an iterator maintaining the search region
+        SolutionIterator<T> iterator = new SolutionIterator<>(searchRegion);
+        setSearchStrategyVM(iterator, strategy);
+        return StreamSupport.stream(iterator, false);
     }
+
+    private static native void setSearchStrategyVM(SolutionIterator iterator, SearchStrategy strategy);
 
     public static <T> T getOneValue(Supplier<T> searchArea) {
         Stream<Solution<T>> search = Muli.<T>search(Find.First, searchArea);
@@ -63,6 +50,7 @@ public class Muli {
     public static native ExecutionMode getVMExecutionMode();
     public static native void setVMExecutionMode(ExecutionMode mode);
 
+    // TODO maybe remove these from VM.
     private static native void recordSolutionAndBacktrackVM(Object solution);
     private static native void recordExceptionAndBacktrackVM(Throwable exception);
 
