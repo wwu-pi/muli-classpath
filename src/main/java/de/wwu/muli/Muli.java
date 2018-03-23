@@ -1,11 +1,13 @@
 package de.wwu.muli;
 
+import de.wwu.muli.search.SolutionIterator;
 import de.wwu.muli.solution.MuliFailException;
 import de.wwu.muli.solution.Solution;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Muli {
 
@@ -25,20 +27,22 @@ public class Muli {
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Stream<Solution<T>> muli(Supplier<T> searchArea) {
-        ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
-        setVMExecutionMode(ExecutionMode.SYMBOLIC);
+        //ExecutionMode previousMode = getVMExecutionMode(); // Locally record previous mode of VM
+        //setVMExecutionMode(ExecutionMode.SYMBOLIC);
 
-        try {
-            Object retval = searchArea.get();
-            recordSolutionAndBacktrackVM(retval);
-        } catch(Throwable e) {
+        return StreamSupport.stream(new SolutionIterator<T>(searchArea), false);
+
+        //try {
+        //    Object retval = searchArea.get();
+        //    recordSolutionAndBacktrackVM(retval);
+        //} catch(Throwable e) {
             // This happens if searchArea.get() threw an exception.
             // However, we consider exceptions as part of the solution.
-            recordExceptionAndBacktrackVM(e);
-        }
-        setVMExecutionMode(previousMode); // Restore previous mode of VM
+        //    recordExceptionAndBacktrackVM(e);
+        //}
+        //setVMExecutionMode(previousMode); // Restore previous mode of VM
 
-        return Arrays.stream(getVMRecordedSolutions());
+        //return Arrays.stream(getVMRecordedSolutions());
     }
 
     public static <T> T getOneValue(Supplier<T> searchArea) {
@@ -56,13 +60,11 @@ public class Muli {
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static native void label();
 
-    private static native ExecutionMode getVMExecutionMode();
-    private static native void setVMExecutionMode(ExecutionMode mode);
+    public static native ExecutionMode getVMExecutionMode();
+    public static native void setVMExecutionMode(ExecutionMode mode);
 
     private static native void recordSolutionAndBacktrackVM(Object solution);
     private static native void recordExceptionAndBacktrackVM(Throwable exception);
 
     private static native <T> Solution<T>[] getVMRecordedSolutions();
-
-    // TODO: maybe add intermediate type representing the (continuable) search space
 }
