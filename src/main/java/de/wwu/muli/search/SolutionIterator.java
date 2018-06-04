@@ -22,10 +22,12 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         //    return false;
         //}
 
-        ExecutionMode previousMode = Muli.getVMExecutionMode(); // Locally record previous mode of VM.
+        ExecutionMode previousMode = Muli.getVMExecutionMode(); // Locally record previous mode of VM (for nested search regions).
         Muli.setVMExecutionMode(ExecutionMode.SYMBOLIC);
+        SolutionIterator previousIterator = getVMActiveIterator(); // Locally record previously active iterator of VM (for nested search regions).
+        setVMActiveIterator(this);
 
-        //restoreChoicePointStateNextChoiceVM(this);
+        //replayChoicePointStateNextChoiceVM(this);
 
         Solution<T> oneSolution;
         try {
@@ -38,16 +40,21 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
+        setVMActiveIterator(this); // Make previous iterator active (if any).
 
         consumer.accept(oneSolution);
         return true;
     }
 
     private static native boolean choicePointHasAdditionalChoiceVM(SolutionIterator<?> it);
-    private static native boolean restoreChoicePointStateNextChoiceVM(SolutionIterator<?> it);
+    private static native boolean replayChoicePointStateNextChoiceVM(SolutionIterator<?> it);
 
     private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution);
     private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception);
+
+    // Active search region / corresponding iterator.
+    public static native SolutionIterator getVMActiveIterator();
+    public static native void setVMActiveIterator(SolutionIterator mode);
 
     @Override
     public Spliterator<Solution<T>> trySplit() {
