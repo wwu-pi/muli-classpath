@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 public class SolutionIterator<T> implements Spliterator<Solution<T>> {
     private final Supplier<T> searchRegion;
-    private Object detrail; // Might be relocated inside VM.
 
     public SolutionIterator(Supplier<T> searchRegion) {
         this.searchRegion = searchRegion;
@@ -27,7 +26,11 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         SolutionIterator previousIterator = getVMActiveIterator(); // Locally record previously active iterator of VM (for nested search regions).
         setVMActiveIterator(this);
 
-        //replayChoicePointStateNextChoiceVM(this);
+        if (!replayInverseTrailForNextChoiceVM()) {
+            // Remaining choice points did not actually have additional choices, i.e. their
+            // branch conditions were unsatisfiable given the constraint stack.
+            return false;
+        }
 
         Solution<T> oneSolution;
         try {
@@ -40,14 +43,14 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
-        setVMActiveIterator(this); // Make previous iterator active (if any).
+        setVMActiveIterator(previousIterator); // Make previous iterator active (if any).
 
         consumer.accept(oneSolution);
         return true;
     }
 
     private static native boolean choicePointHasAdditionalChoiceVM(SolutionIterator<?> it);
-    private static native boolean replayChoicePointStateNextChoiceVM(SolutionIterator<?> it);
+    private static native boolean replayInverseTrailForNextChoiceVM();
 
     private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution);
     private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception);
