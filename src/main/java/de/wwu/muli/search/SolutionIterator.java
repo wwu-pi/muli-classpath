@@ -35,11 +35,11 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         Solution<T> oneSolution;
         try {
             Object retval = this.searchRegion.get();
-            oneSolution = (Solution<T>)wrapSolutionAndFullyBacktrackVM(retval);
-        } catch(Throwable e) {
+            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval);
+        } catch (Throwable e) {
             // This happens if searchRegion.get() threw an exception.restoreChoicePointStateNextChoiceVM
             // However, we consider exceptions as part of the solution.
-            oneSolution = (Solution<T>)wrapExceptionAndFullyBacktrackVM(e);
+            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e);
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
@@ -50,6 +50,11 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
     }
 
     private static native boolean choicePointHasAdditionalChoiceVM(SolutionIterator<?> it);
+
+    /**
+     * For continued search regions, this replays operations from the inverse trail, thus rebuilding the former state and the former trail.
+     * For fresh search regions, this marks a "root choice point" instead, to which backtracking will always occur.
+     * */
     private static native boolean replayInverseTrailForNextChoiceVM();
 
     private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution);
