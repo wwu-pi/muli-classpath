@@ -35,7 +35,14 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         Solution<T> oneSolution;
         try {
             Object retval = this.searchRegion.get();
+            if (retval instanceof NoFurtherSolutionsIndicator) {
+                // We tried, but there is no additional solution.
+                Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
+                setVMActiveIterator(previousIterator); // Make previous iterator active (if any).
+                return false;
+            }
             oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval);
+
         } catch (Throwable e) {
             // This happens if searchRegion.get() threw an exception.restoreChoicePointStateNextChoiceVM
             // However, we consider exceptions as part of the solution.
