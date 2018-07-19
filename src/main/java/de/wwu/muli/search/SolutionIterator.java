@@ -29,6 +29,8 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         if (!replayInverseTrailForNextChoiceVM()) {
             // Remaining choice points did not actually have additional choices, i.e. their
             // branch conditions were unsatisfiable given the constraint stack.
+            Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
+            setVMActiveIterator(previousIterator); // Make previous iterator active (if any).
             return false;
         }
 
