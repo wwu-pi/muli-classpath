@@ -1,5 +1,5 @@
 group 'de.wwu.muli'
-version '1.6.4-SNAPSHOT'
+version '1.7.1-SNAPSHOT'
 
 task wrapper(type: Wrapper) {
   gradleVersion = '2.13'
@@ -10,6 +10,7 @@ apply plugin: 'java'
 apply plugin: 'maven' // task: install
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()

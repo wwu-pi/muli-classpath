@@ -37,41 +37,61 @@ public class Muli {
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Stream<Solution<T>> muli(Supplier<T> searchRegion) {
-        return muli(searchRegion, SearchStrategy.IterativeDeepening);
+        return muli(searchRegion, SearchStrategy.DepthFirstSearch);
+    }
+
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
+    public static <T> Solution<T> getOneSolution(Supplier<T> searchRegion, SearchStrategy strategy) {
+        // Throws NoElementException (via Optional.get()).
+        Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
+        return search
+                .filter(x -> !x.isExceptionControlFlow())
+                .findFirst()
+                .get();
+    }
+
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
+    public static <T> Solution<T> getOneSolutionEx(Supplier<T> searchRegion, SearchStrategy strategy) {
+        // Throws NoElementException (via Optional.get()).
+        Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
+        return search
+                .findFirst()
+                .get();
+    }
+
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
+    public static <T> List<Solution<T>> getAllSolutions(Supplier<T> searchRegion, SearchStrategy strategy) {
+        Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
+        return search
+                .filter(x -> !x.isExceptionControlFlow())
+                .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
+    public static <T> List<Solution<T>> getAllSolutionsEx(Supplier<T> searchRegion, SearchStrategy strategy) {
+        Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
+        return search
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Solution<T> getOneSolution(Supplier<T> searchRegion) {
-        // Throws NoElementException (via Optional.get()).
-        Stream<Solution<T>> search = Muli.<T>muli(searchRegion);
-        return search
-                .filter(x -> !x.isExceptionControlFlow())
-                .findFirst()
-                .get();
+        return getOneSolution(searchRegion, SearchStrategy.DepthFirstSearch);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Solution<T> getOneSolutionEx(Supplier<T> searchRegion) {
-        // Throws NoElementException (via Optional.get()).
-        Stream<Solution<T>> search = Muli.<T>muli(searchRegion);
-        return search
-                .findFirst()
-                .get();
+        return getOneSolutionEx(searchRegion, SearchStrategy.DepthFirstSearch);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> List<Solution<T>> getAllSolutions(Supplier<T> searchRegion) {
-        Stream<Solution<T>> search = Muli.<T>muli(searchRegion);
-        return search
-                .filter(x -> !x.isExceptionControlFlow())
-                .collect(Collectors.toList());
+        return getAllSolutions(searchRegion, SearchStrategy.DepthFirstSearch);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> List<Solution<T>> getAllSolutionsEx(Supplier<T> searchRegion) {
-        Stream<Solution<T>> search = Muli.<T>muli(searchRegion);
-        return search
-                .collect(Collectors.toList());
+        return getAllSolutionsEx(searchRegion, SearchStrategy.DepthFirstSearch);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
