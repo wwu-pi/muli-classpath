@@ -1,10 +1,5 @@
 group 'de.wwu.muli'
-version '1.7.3-SNAPSHOT'
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '2.13'
-  distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+version '1.8.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven' // task: install
