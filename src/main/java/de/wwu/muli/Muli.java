@@ -105,4 +105,6 @@ public class Muli {
 
     public static native ExecutionMode getVMExecutionMode();
     public static native void setVMExecutionMode(ExecutionMode mode);
+
+    public static native String executeOnShell(String cmd, String pathToTemp, String prefix, String suffix, String script);
 }
