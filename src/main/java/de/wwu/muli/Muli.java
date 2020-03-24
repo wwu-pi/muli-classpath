@@ -98,7 +98,7 @@ public class Muli {
     public static native MuliFailException fail(); // Can't be declared as "throws MuliFailE..." because compiler does not recognise it as invariant
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static native void label();
+    public static native Object label(Object o);
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static native void setSearchStrategyVM(SolutionIterator iterator, SearchStrategy strategy);
