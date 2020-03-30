@@ -4,27 +4,11 @@ import de.wwu.muli.search.SolutionIterator;
 import de.wwu.muli.solution.MuliFailException;
 import de.wwu.muli.solution.Solution;
 
-import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Muli {
-
-    @Deprecated
-    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Stream<Solution<T>> search(Find find, SearchStrategy strategy, Supplier<T> searchRegion) {
-        return Muli.muli(searchRegion, strategy);
-        // TODO Use find preference to stop search and/or filter results (cf. getOneValue et al).
-    }
-
-    @Deprecated
-    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> Stream<Solution<T>> search(Find find, Supplier<T> searchRegion) {
-        return search(find, SearchStrategy.IterativeDeepening, searchRegion);
-    }
-
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Stream<Solution<T>> muli(Supplier<T> searchRegion, SearchStrategy strategy) {
         // Create an iterator maintaining the search region.
@@ -60,18 +44,18 @@ public class Muli {
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> List<Solution<T>> getAllSolutions(Supplier<T> searchRegion, SearchStrategy strategy) {
+    public static <T> Solution<T>[] getAllSolutions(Supplier<T> searchRegion, SearchStrategy strategy) {
         Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
-        return search
+        return (Solution<T>[]) search
                 .filter(x -> !x.isExceptionControlFlow())
-                .collect(Collectors.toList());
+                .toArray((size) -> new Solution[size]);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> List<Solution<T>> getAllSolutionsEx(Supplier<T> searchRegion, SearchStrategy strategy) {
+    public static <T> Solution<T>[] getAllSolutionsEx(Supplier<T> searchRegion, SearchStrategy strategy) {
         Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
         return search
-                .collect(Collectors.toList());
+                .toArray((size) -> new Solution[size]);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
@@ -85,12 +69,12 @@ public class Muli {
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> List<Solution<T>> getAllSolutions(Supplier<T> searchRegion) {
+    public static <T> Solution<T>[] getAllSolutions(Supplier<T> searchRegion) {
         return getAllSolutions(searchRegion, SearchStrategy.DepthFirstSearch);
     }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
-    public static <T> List<Solution<T>> getAllSolutionsEx(Supplier<T> searchRegion) {
+    public static <T> Solution<T>[] getAllSolutionsEx(Supplier<T> searchRegion) {
         return getAllSolutionsEx(searchRegion, SearchStrategy.DepthFirstSearch);
     }
 
@@ -106,5 +90,6 @@ public class Muli {
     public static native ExecutionMode getVMExecutionMode();
     public static native void setVMExecutionMode(ExecutionMode mode);
 
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static native String executeOnShell(String cmd, String pathToTemp, String prefix, String suffix, String script);
 }
