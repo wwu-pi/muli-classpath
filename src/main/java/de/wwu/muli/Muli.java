@@ -54,7 +54,7 @@ public class Muli {
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Solution<T>[] getAllSolutionsEx(Supplier<T> searchRegion, SearchStrategy strategy) {
         Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
-        return search
+        return (Solution<T>[]) search
                 .toArray((size) -> new Solution[size]);
     }
 
