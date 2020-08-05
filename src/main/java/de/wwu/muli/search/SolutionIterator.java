@@ -10,9 +10,16 @@ import java.util.function.Supplier;
 
 public class SolutionIterator<T> implements Spliterator<Solution<T>> {
     private final Supplier<T> searchRegion;
+    private final boolean wrapInputs;
 
     public SolutionIterator(Supplier<T> searchRegion) {
         this.searchRegion = searchRegion;
+        this.wrapInputs = false;
+    }
+
+    public SolutionIterator(Supplier<T> searchRegion, boolean wrapInputs) {
+        this.searchRegion = searchRegion;
+        this.wrapInputs = wrapInputs;
     }
 
     @Override
@@ -43,12 +50,12 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
                 setVMActiveIterator(previousIterator); // Make previous iterator active (if any).
                 return false;
             }
-            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval);
+            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval, wrapInputs);
 
         } catch (Throwable e) {
             // This happens if searchRegion.get() threw an exception.restoreChoicePointStateNextChoiceVM
             // However, we consider exceptions as part of the solution.
-            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e);
+            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e/*, wrapInputs*/);
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
@@ -66,8 +73,8 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
      * */
     private static native boolean replayInverseTrailForNextChoiceVM();
 
-    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution);
-    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception);
+    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, boolean wrapInputs);
+    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception/*, boolean wrapInputs*/); // TODO
 
     // Active search region / corresponding iterator.
     public static native SolutionIterator getVMActiveIterator();

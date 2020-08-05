@@ -18,6 +18,12 @@ public class Muli {
         return StreamSupport.stream(iterator, false);
     }
 
+    public static <T> Stream<Solution<T>> muliWithInputs(Supplier<T> searchRegion,
+                                                         SearchStrategy strategy) {
+        SolutionIterator<T> iterator = new SolutionIterator<>(searchRegion, true);
+        setSearchStrategyVM(iterator, strategy);
+        return StreamSupport.stream(iterator, false);
+    }
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Stream<Solution<T>> muli(Supplier<T> searchRegion) {
