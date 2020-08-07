@@ -10,14 +10,14 @@ import java.util.function.Supplier;
 
 public class SolutionIterator<T> implements Spliterator<Solution<T>> {
     private final Supplier<T> searchRegion;
-    private final boolean wrapInputs;
+    private final Boolean wrapInputs;
 
     public SolutionIterator(Supplier<T> searchRegion) {
         this.searchRegion = searchRegion;
         this.wrapInputs = false;
     }
 
-    public SolutionIterator(Supplier<T> searchRegion, boolean wrapInputs) {
+    public SolutionIterator(Supplier<T> searchRegion, Boolean wrapInputs) {
         this.searchRegion = searchRegion;
         this.wrapInputs = wrapInputs;
     }
@@ -55,7 +55,7 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
         } catch (Throwable e) {
             // This happens if searchRegion.get() threw an exception.restoreChoicePointStateNextChoiceVM
             // However, we consider exceptions as part of the solution.
-            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e/*, wrapInputs*/);
+            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e, wrapInputs);
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
@@ -73,8 +73,8 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
      * */
     private static native boolean replayInverseTrailForNextChoiceVM();
 
-    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, boolean wrapInputs);
-    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception/*, boolean wrapInputs*/); // TODO
+    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, Boolean wrapInputs);
+    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception, Boolean wrapInputs);
 
     // Active search region / corresponding iterator.
     public static native SolutionIterator getVMActiveIterator();
