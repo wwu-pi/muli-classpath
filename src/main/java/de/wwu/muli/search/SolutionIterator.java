@@ -11,15 +11,20 @@ import java.util.function.Supplier;
 public class SolutionIterator<T> implements Spliterator<Solution<T>> {
     private final Supplier<T> searchRegion;
     private final Boolean wrapInputs;
+    private final Boolean generateTestCase;
 
     public SolutionIterator(Supplier<T> searchRegion) {
-        this.searchRegion = searchRegion;
-        this.wrapInputs = false;
+        this(searchRegion, false, false);
     }
 
     public SolutionIterator(Supplier<T> searchRegion, Boolean wrapInputs) {
+        this(searchRegion, wrapInputs, false);
+    }
+
+    public SolutionIterator(Supplier<T> searchRegion, Boolean wrapInputs, Boolean generateTestCase) {
         this.searchRegion = searchRegion;
         this.wrapInputs = wrapInputs;
+        this.generateTestCase = generateTestCase;
     }
 
     @Override
@@ -50,12 +55,12 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
                 setVMActiveIterator(previousIterator); // Make previous iterator active (if any).
                 return false;
             }
-            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval, wrapInputs);
+            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval, wrapInputs, generateTestCase);
 
         } catch (Throwable e) {
             // This happens if searchRegion.get() threw an exception.restoreChoicePointStateNextChoiceVM
             // However, we consider exceptions as part of the solution.
-            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e, wrapInputs);
+            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e, wrapInputs, generateTestCase);
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
@@ -73,8 +78,8 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
      * */
     private static native boolean replayInverseTrailForNextChoiceVM();
 
-    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, Boolean wrapInputs);
-    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception, Boolean wrapInputs);
+    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, Boolean wrapInputs, Boolean generateTestCase);
+    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception, Boolean wrapInputs, Boolean generateTestCase);
 
     // Active search region / corresponding iterator.
     public static native SolutionIterator getVMActiveIterator();

@@ -25,6 +25,13 @@ public class Muli {
         return StreamSupport.stream(iterator, false);
     }
 
+    public static <T> Stream<Solution<T>> muliWithTestCases(Supplier<T> searchRegion,
+                                                            SearchStrategy strategy) {
+        SolutionIterator<T> iterator = new SolutionIterator<>(searchRegion, true, true);
+        setSearchStrategyVM(iterator, strategy);
+        return StreamSupport.stream(iterator, false);
+    }
+
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Stream<Solution<T>> muli(Supplier<T> searchRegion) {
         return muli(searchRegion, SearchStrategy.DepthFirstSearch);
