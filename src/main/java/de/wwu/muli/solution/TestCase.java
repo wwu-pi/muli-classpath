@@ -2,10 +2,11 @@ package de.wwu.muli.solution;
 
 import java.util.BitSet;
 
-public class TestCase {
+public class TestCase<T> {
     private String methodName;
     private String className;
     private Object[] inputs;
+    private T output;
     private BitSet coveredInstructions;
 
     public String getMethodName() {
@@ -38,5 +39,13 @@ public class TestCase {
 
     public void setCoveredInstructions(BitSet coveredInstructions) {
         this.coveredInstructions = coveredInstructions;
+    }
+
+    public void setOutput(T output) {
+        this.output = output;
+    }
+
+    public T getOutput() {
+        return output;
     }
 }
