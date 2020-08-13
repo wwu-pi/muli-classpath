@@ -1,6 +1,7 @@
 package de.wwu.muli.tcg.testmethodgenerator;
 
 import de.wwu.muli.solution.TestCase;
+import de.wwu.muli.tcg.utility.Indentator;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,14 +21,17 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
     // Name of method for which test cases are generated
     protected String testedMethodName;
 
-    public StdTestMethodGenerator() {
-        this("10e-6");
+    protected Indentator indentator;
+
+    public StdTestMethodGenerator(Indentator indentator) {
+        this(indentator, "10e-6");
     }
 
-    public StdTestMethodGenerator(String assertEqualsDelta, Class<?>... specialCases) {
+    public StdTestMethodGenerator(Indentator indentator, String assertEqualsDelta, Class<?>... specialCases) {
         this.assertEqualsDelta = assertEqualsDelta;
         this.specialCases = specialCases;
         encounteredTypes = new HashSet<>();
+        this.indentator = indentator;
     }
 
     @Override
@@ -67,9 +71,9 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
         StringBuilder sb = new StringBuilder();
         sb.append(generateTestMethodAnnotations(tc));
         sb.append(generateTestMethodDeclaration(tc));
-        sb.append(generateStringsForInputs(tc.getInputs()));
-        sb.append(generateStringForOutput(tc.getOutput()));
-        sb.append(generateAssertionString()); // TODO Method call && result
+        sb.append(indentator.indentBlock(generateStringsForInputs(tc.getInputs())));
+        sb.append(indentator.indentBlock(generateStringForOutput(tc.getOutput())));
+        sb.append(indentator.indentBlock(generateAssertionString())); // TODO Method call && result
         sb.append(generateTestMethodEnd());
         return sb.toString();
     }
@@ -176,5 +180,14 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
         return ""; // TODO
     }
 
+    @Override
+    public String getTestedClassName() {
+        return testedClassName;
+    }
+
+    @Override
+    public String getTestedMethodName() {
+        return testedMethodName;
+    }
 
 }

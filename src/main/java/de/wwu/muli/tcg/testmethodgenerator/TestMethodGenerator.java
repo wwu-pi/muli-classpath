@@ -10,4 +10,8 @@ public interface TestMethodGenerator {
 
     Set<Class<?>> getEncounteredTypes();
 
+    String getTestedClassName();
+
+    String getTestedMethodName();
+
 }

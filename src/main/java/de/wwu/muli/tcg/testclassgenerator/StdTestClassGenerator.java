@@ -1,9 +1,19 @@
 package de.wwu.muli.tcg.testclassgenerator;
 
+import de.wwu.muli.tcg.utility.Indentator;
+
+import java.util.Comparator;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class StdTestClassGenerator implements TestClassGenerator {
+
+    protected final Indentator indentator;
+
+    public StdTestClassGenerator(Indentator indentator) {
+        this.indentator = indentator;
+    }
 
     @Override
     public String generateTestClassString(String packageName,
@@ -14,14 +24,15 @@ public class StdTestClassGenerator implements TestClassGenerator {
         sb.append(generatePackageDeclaration(packageName));
         sb.append(generateImports(encounteredTypes));
         sb.append(generateTestClassAnnotations());
-        sb.append(generateTestClassDeclaration());
-        sb.append(generateBeforeClassMethod());
-        sb.append(generateAfterClassMethod());
-        sb.append(generateBeforeMethod());
-        sb.append(generateAfterMethod());
+        sb.append(generateTestClassDeclaration(testedClassName));
+        sb.append(generateClassAttributes());
+        sb.append(indentator.indentBlock(generateBeforeClassMethod()));
+        sb.append(indentator.indentBlock(generateAfterClassMethod()));
+        sb.append(indentator.indentBlock(generateBeforeMethod()));
+        sb.append(indentator.indentBlock(generateAfterMethod()));
 
         for (String testMethodString : testMethodStrings) {
-            sb.append(testMethodString).append("\r\n");
+            sb.append(indentator.indentBlock(testMethodString)).append("\r\n");
         }
 
         sb.append(generateClassEnd());
@@ -36,6 +47,11 @@ public class StdTestClassGenerator implements TestClassGenerator {
     protected String generateImports(Set<Class<?>> encounteredTypes) {
         StringBuilder sb = new StringBuilder();
 
+        sb.append("import org.junit.*;\r\n");
+        sb.append("import static org.junit.Assert.*");
+
+        encounteredTypes = sortEncounteredTypes(encounteredTypes);
+
         for (Class<?> typeToImport : encounteredTypes) {
             sb.append("import ").append(typeToImport.getName()).append(";\r\n");
         }
@@ -43,32 +59,50 @@ public class StdTestClassGenerator implements TestClassGenerator {
         return sb.toString();
     }
 
-    protected String generateTestClassAnnotations() {
-        return ""; // TODO
+    protected SortedSet<Class<?>> sortEncounteredTypes(Set<Class<?>> encounteredTypes) {
+        SortedSet<Class<?>> result = new TreeSet<>(new AlphabeticalTypeComparator());
+        result.addAll(encounteredTypes);
+        return result;
     }
 
-    protected String generateTestClassDeclaration() {
-        return ""; // TODO
+    protected static class AlphabeticalTypeComparator implements Comparator<Class<?>> {
+
+        @Override
+        public int compare(Class<?> o1, Class<?> o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    }
+
+    protected String generateTestClassAnnotations() {
+        return "@SuppressWarnings(\"all\")\r\n";
+    }
+
+    protected String generateTestClassDeclaration(String testedClassName) {
+        return "public class Test" + testedClassName + " {\r\n";
+    }
+
+    protected String generateClassAttributes() {
+        return "";
     }
 
     protected String generateBeforeClassMethod() {
-        return ""; // TODO
+        return "";
     }
 
     protected String generateAfterClassMethod() {
-        return ""; // TODO
+        return "";
     }
 
     protected String generateBeforeMethod() {
-        return ""; // TODO
+        return "";
     }
 
     protected String generateAfterMethod() {
-        return ""; // TODO
+        return "";
     }
 
     protected String generateClassEnd() {
-        return ""; // TODO
+        return "}\r\n";
     }
 
 }
