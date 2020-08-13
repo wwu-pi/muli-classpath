@@ -48,14 +48,14 @@ public class StdTestClassGenerator implements TestClassGenerator {
         StringBuilder sb = new StringBuilder();
 
         sb.append("import org.junit.*;\r\n");
-        sb.append("import static org.junit.Assert.*");
+        sb.append("import static org.junit.Assert.*;\r\n");
 
         encounteredTypes = sortEncounteredTypes(encounteredTypes);
 
         for (Class<?> typeToImport : encounteredTypes) {
             sb.append("import ").append(typeToImport.getName()).append(";\r\n");
         }
-
+        sb.append("\r\n\r\n");
         return sb.toString();
     }
 
@@ -104,5 +104,4 @@ public class StdTestClassGenerator implements TestClassGenerator {
     protected String generateClassEnd() {
         return "}\r\n";
     }
-
 }

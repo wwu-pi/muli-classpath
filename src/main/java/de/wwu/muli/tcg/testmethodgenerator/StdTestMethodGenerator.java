@@ -3,24 +3,37 @@ package de.wwu.muli.tcg.testmethodgenerator;
 import de.wwu.muli.solution.TestCase;
 import de.wwu.muli.tcg.utility.Indentator;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class StdTestMethodGenerator implements TestMethodGenerator { // TODO method name...
+import static de.wwu.muli.tcg.utility.Utility.toFirstLower;
+import static de.wwu.muli.tcg.utility.Utility.toFirstUpper;
+
+
+// TODO get fully qualified class name which is tested
+public class StdTestMethodGenerator implements TestMethodGenerator {
     protected final Class<?>[] specialCases;
     protected final String assertEqualsDelta;
     protected final Set<Class<?>> encounteredTypes;
     // Temporary store for objects and their argument name in the test method
+    // Should be cleared after the String for the TestCase-object was generated.
     protected final Map<Object, String> argumentNamesForObjects = new HashMap<>();
+    // Temporary stores for object types (represented as strings) how many of them are already within a method.
+    // Should be cleared after the String for the TestCase-object was generated.
+    protected final Map<String, Integer> argumentNameToNumberOfOccurrences = new HashMap<>();
+    // Temporary stores all input objects
+    protected Object[] inputObjects = null;
+    // Temporary stores all output objects;
+    protected Object outputObject = null;
     // An identifier for the currently generated test
     protected int numberOfTest = 0;
     // Name of class for which test cases are generated
     protected String testedClassName;
     // Name of method for which test cases are generated
     protected String testedMethodName;
-
     protected Indentator indentator;
 
     public StdTestMethodGenerator(Indentator indentator) {
@@ -36,13 +49,13 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
 
     @Override
     public String generateTestCaseStringRepresentation(TestCase<?> tc) {
-        init(tc);
+        before(tc);
         String result = execute(tc);
-        tearDown(tc);
+        after(tc);
         return result;
     }
 
-    protected void init(TestCase<?> tc) {
+    protected void before(TestCase<?> tc) {
         if (testedClassName != null && testedMethodName != null) {
             if (!testedClassName.equals(tc.getClassName()) || !testedMethodName.equals(tc.getMethodName())) {
                 throw new UnsupportedOperationException("Test cases can only be generated for one specific method " +
@@ -52,10 +65,16 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
             testedClassName = tc.getClassName();
             testedMethodName = tc.getMethodName();
         }
+
+        inputObjects = tc.getInputs();
+        outputObject = tc.getOutput();
     }
 
-    protected void tearDown(TestCase<?> tc) {
+    protected void after(TestCase<?> tc) {
         argumentNamesForObjects.clear();
+        argumentNameToNumberOfOccurrences.clear();
+        inputObjects = null;
+        outputObject = null;
         numberOfTest++;
     }
 
@@ -73,7 +92,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
         sb.append(generateTestMethodDeclaration(tc));
         sb.append(indentator.indentBlock(generateStringsForInputs(tc.getInputs())));
         sb.append(indentator.indentBlock(generateStringForOutput(tc.getOutput())));
-        sb.append(indentator.indentBlock(generateAssertionString())); // TODO Method call && result
+        sb.append(indentator.indentBlock(generateAssertionString()));
         sb.append(generateTestMethodEnd());
         return sb.toString();
     }
@@ -87,19 +106,19 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
     }
 
     protected String generateTestAnnotationForException(Exception e) {
-        return ""; // TODO
+        return "@Test(expected=" + e.getClass().getName() + ".class)\r\n";
     }
 
     protected String generateTestAnnotationForReturn(Object returnVal) {
-        return ""; // TODO
+        return "@Test\r\n";
     }
 
     protected String generateTestMethodDeclaration(TestCase<?> tc) {
-        return ""; // TODO
+        return "public void test_"+ tc.getMethodName() + "_" + numberOfTest + "() {\r\n";
     }
 
     protected String generateTestMethodEnd() {
-        return ""; // TODO
+        return "}\r\n";
     }
 
     protected String generateStringsForInputs(Object[] inputs) {
@@ -113,27 +132,89 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
     protected String generateElementString(Object o) {
         if (isNull(o)) {
             return generateNullString(o);
-        } else if (isPrimitiveOrWrapping(o)) {
-            return generatePrimitiveOrWrappingString(o);
+        }
+        if (isAlreadyCreated(o)) {
+            return "";
+        }
+        String objectArgumentName = generateNumberedArgumentName(o);
+        argumentNamesForObjects.put(o, objectArgumentName);
+        if (isPrimitiveClass(o.getClass())) {
+            return generatePrimitiveString(o);
+        } else if (isWrappingClass(o.getClass())) {
+            return generateWrappingString(o);
+        } else if (isStringClass(o.getClass())) {
+            return generateStringString(o);
         } else {
             return generateObjectString(o);
         }
     }
 
+    protected boolean isAlreadyCreated(Object o) {
+        return argumentNamesForObjects.containsKey(o);
+    }
+
     protected boolean isNull(Object o) {
-        return false; // TODO
+        return o == null; // TODO probably more complex if in VM
     }
 
     protected String generateNullString(Object o) {
+        return "null";
+    }
+
+    protected boolean isWrappingClass(Class<?> oc) { // TODO Adapt if outside of VM
+        return Integer.class.equals(oc) || Long.class.equals(oc) || Double.class.equals(oc) || Float.class.equals(oc) ||
+                Short.class.equals(oc) || Byte.class.equals(oc) || Boolean.class.equals(oc);
+    }
+
+    protected boolean isPrimitiveClass(Class<?> oc) { // TODO Adapt if outside of VM
+        return int.class.equals(oc) || long.class.equals(oc) || double.class.equals(oc) || float.class.equals(oc) ||
+                short.class.equals(oc) || byte.class.equals(oc) || boolean.class.equals(oc);
+    }
+
+    protected String generatePrimitiveString(Object o) { // TODO Parameter type is bad...Object leads to auto-wrapping to Integer
         return ""; // TODO
     }
 
-    protected boolean isPrimitiveOrWrapping(Object o) {
-        return false; // TODO
+    protected String generateWrappingString(Object o) { // TODO Adapt if outside of VM
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append(o.getClass().getSimpleName());
+            sb.append(" ");
+            sb.append(argumentNamesForObjects.get(o));
+            sb.append(" = ");
+            Field valueField = o.getClass().getDeclaredField("value");
+            boolean accessible = valueField.isAccessible();
+            valueField.setAccessible(true);
+            sb.append(valueField.get(o)).append(";\r\n");
+            valueField.setAccessible(accessible);
+            return sb.toString();
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    protected String generatePrimitiveOrWrappingString(Object o) {
-        return ""; // TODO
+    protected boolean isStringClass(Class<?> oc) {
+        return oc.equals(String.class);
+    }
+
+    protected String generateNumberedArgumentName(Object o) {
+        String numberedArgumentNameForType = argumentNamesForObjects.get(o);
+        if (numberedArgumentNameForType != null) {
+            return numberedArgumentNameForType;
+        }
+        Class<?> type = o.getClass();
+        String argumentNameForType = getArgumentNameForType(type);
+        Integer currentNumberOfArgumentType = argumentNameToNumberOfOccurrences.get(argumentNameForType);
+        if (currentNumberOfArgumentType == null) {
+            currentNumberOfArgumentType = 0;
+        }
+        numberedArgumentNameForType = argumentNameForType + currentNumberOfArgumentType;
+        argumentNameToNumberOfOccurrences.put(argumentNameForType, currentNumberOfArgumentType + 1);
+        return numberedArgumentNameForType;
+    }
+
+    protected String getArgumentNameForType(Class<?> type) {
+        return toFirstLower(type.getSimpleName());
     }
 
     protected String generateObjectString(Object o) {
@@ -143,8 +224,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
         }
         sb.append(generateConstructionString(o));
         sb.append(generateAttributesStrings(o));
-
-        return sb.toString(); // TODO
+        return sb.toString();
     }
 
     protected boolean isSpecialCase(Class<?> objectClass) {
@@ -160,24 +240,81 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
         throw new UnsupportedOperationException("No special cases for the StdTestCaseGenerator yet.");
     }
 
+    protected String generateStringString(Object o) {
+        return "String " + argumentNamesForObjects.get(o) + " = \"" + o.toString() + "\";\r\n";
+    }
+
     protected String generateConstructionString(Object o) {
-        return ""; // TODO
+        StringBuilder sb = new StringBuilder();
+        sb.append(o.getClass().getSimpleName()).append(" ");
+        sb.append(argumentNamesForObjects.get(o)).append(" = ");
+        sb.append("new ").append(o.getClass().getSimpleName()).append("();\r\n");
+        return sb.toString();
     }
 
     protected String generateAttributesStrings(Object o) {
-        return ""; // TODO
+        StringBuilder sb = new StringBuilder();
+        Field[] fields = o.getClass().getDeclaredFields();
+        String objectArgumentName = argumentNamesForObjects.get(o);
+        for (Field f : fields) {
+            sb.append(generateSetStatementForObject(objectArgumentName, o, f));
+        }
+        return sb.toString();
     }
 
-    protected String generateStringForOutput(Object output) { // TODO
+    protected String generateSetStatementForObject(String objectArgumentName, Object o, Field f) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            boolean accessible = f.isAccessible();
+            f.setAccessible(true);
+            Object fieldValue = f.get(o);
+            String fieldName = f.getName();
+            f.setAccessible(accessible);
+            sb.append(generateElementString(fieldValue));
+            String fieldValueArgumentName = argumentNamesForObjects.get(fieldValue);
+            sb.append(objectArgumentName)
+                    .append(".set")
+                    .append(toFirstUpper(fieldName))
+                    .append("(")
+                    .append(fieldValueArgumentName)
+                    .append(");\r\n");
+            return sb.toString();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected String generateStringForOutput(Object output) {
         return generateElementString(output);
     }
 
-    protected String generateAssertionString() { // TODO
-        return ""; // TODO
+    protected String generateAssertionString() {
+        String[] inputObjectNames = new String[inputObjects.length];
+        for (int i = 0; i < inputObjectNames.length; i++) {
+            inputObjectNames[i] = argumentNamesForObjects.get(inputObjects[i]);
+        }
+        String outputObjectName = argumentNamesForObjects.get(outputObject);
+        StringBuilder sb = new StringBuilder();
+        if (outputObject != null) {
+            sb.append("assertEquals(").append(outputObjectName).append(", ");
+        }
+        sb.append(generateTestedMethodCallString("TODO", inputObjectNames)); // TODO
+        if (outputObject != null) {
+            sb.append(")");
+        }
+        sb.append(";\r\n");
+        return sb.toString();
     }
 
-    protected String generateTestedMethodCallString() { // TODO
-        return ""; // TODO
+    protected String generateTestedMethodCallString(String qualifiedClassName, String[] inputObjectNames) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(qualifiedClassName).append(".").append(testedMethodName).append("(");
+        for (String s : inputObjectNames) {
+            sb.append(s).append(",");
+        }
+        sb.delete(sb.length()-1, sb.length());
+        sb.append(")");
+        return sb.toString();
     }
 
     @Override
@@ -189,5 +326,4 @@ public class StdTestMethodGenerator implements TestMethodGenerator { // TODO met
     public String getTestedMethodName() {
         return testedMethodName;
     }
-
 }

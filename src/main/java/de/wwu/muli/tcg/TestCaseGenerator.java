@@ -10,7 +10,6 @@ import de.wwu.muli.tcg.testsetreducer.TestSetReducer;
 import de.wwu.muli.tcg.testsetsorter.NullTestSetSorter;
 import de.wwu.muli.tcg.testsetsorter.TestSetSorter;
 import de.wwu.muli.tcg.utility.Indentator;
-import de.wwu.muli.tcg.utility.TabIndentator;
 
 import java.util.*;
 
@@ -26,7 +25,7 @@ public class TestCaseGenerator {
     protected String packageName = "test"; // TODO
 
     private TestCaseGenerator() {
-        indentator = new TabIndentator();
+        indentator = new Indentator.TabIndentator();
         testMethodGenerator = new StdTestMethodGenerator(indentator);
         testClassGenerator = new StdTestClassGenerator(indentator);
 
