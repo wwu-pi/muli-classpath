@@ -4,10 +4,7 @@ import de.wwu.muli.solution.TestCase;
 import de.wwu.muli.tcg.utility.Indentator;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static de.wwu.muli.tcg.utility.Utility.*;
 
@@ -35,7 +32,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     protected Indentator indentator;
 
     public StdTestMethodGenerator(Indentator indentator) {
-        this(indentator, "10e-6");
+        this(indentator, "10e-6", new Class[]{Collection.class, Map.class});
     }
 
     public StdTestMethodGenerator(Indentator indentator, String assertEqualsDelta, Class<?>... specialCases) {
@@ -66,6 +63,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
         inputObjects = tc.getInputs();
         outputObject = tc.getOutput();
+        argumentNamesForObjects.put(null, "null");
     }
 
     protected void after(TestCase<?> tc) {
@@ -125,7 +123,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
     protected String generateElementString(Object o) {
         if (isNull(o)) {
-            return generateNullString(o);
+            return ""; // No element string has to be generated for null
         }
         if (isAlreadyCreated(o)) {
             return "";
@@ -148,12 +146,14 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected String generateNullString(Object o) {
-        return "null";
+        return "null;\r\n";
     }
 
-    protected String generatePrimitiveString(Object o) { // TODO Parameter type is bad...Object leads to auto-wrapping to Integer
+    protected String generatePrimitiveString(Object o) {
+        // TODO Parameter type is bad...Object leads to auto-wrapping to Integer; is this problematic?
         return ""; // TODO
     }
+
 
     protected String generateWrappingString(Object o) { // TODO Adapt if outside of VM
         try {
@@ -206,15 +206,46 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
     protected boolean isSpecialCase(Class<?> objectClass) {
         for (Class<?> specialCase : specialCases) {
-            if (objectClass.equals(specialCase)) {
+            if (specialCase.isAssignableFrom(objectClass)) {
                 return true;
             }
         }
         return false;
     }
 
-    protected String generateSpecialCaseString(Object o) { // TODO Maps, Collections, ...
-        throw new UnsupportedOperationException("No special cases for the StdTestCaseGenerator yet.");
+    protected String generateSpecialCaseString(Object o) {
+        if (o instanceof Collection) {
+            return treatIterableSpecialCase((Collection<?>) o);
+        } else if (o instanceof Map) {
+            return treatMapSpecialCase((Map<?, ?>) o);
+        }
+        throw new UnsupportedOperationException("Aside from Collection and Map there currently are no special cases " +
+                "for the StdTestCaseGenerator yet.");
+    }
+
+    protected String treatIterableSpecialCase(Collection<?> c) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(generateConstructionString(c));
+        String collectionName = argumentNamesForObjects.get(c);
+        for (Object o : c) {
+            sb.append(generateElementString(o));
+            sb.append(collectionName).append(".add(").append(argumentNamesForObjects.get(o)).append(");\r\n");
+        }
+        return sb.toString();
+    }
+
+    protected String treatMapSpecialCase(Map<?, ?> m) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(generateConstructionString(m));
+        String mapName = argumentNamesForObjects.get(m);
+        for (Map.Entry<?, ?> e : m.entrySet()) {
+            sb.append(generateElementString(e.getKey()));
+            sb.append(generateElementString(e.getValue()));
+            String keyName = argumentNamesForObjects.get(e.getKey());
+            String valueName = argumentNamesForObjects.get(e.getValue());
+            sb.append(mapName).append(".put(").append(keyName).append(", ").append(valueName).append(");\r\n");
+        }
+        return sb.toString();
     }
 
     protected String generateStringString(Object o) {
