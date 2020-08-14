@@ -15,6 +15,10 @@ public class Utility {
         return o == null;
     }
 
+    public static boolean isFloatingPointClass(Class<?> oc) {
+        return Double.class.equals(oc) || Float.class.equals(oc) || double.class.equals(oc) || float.class.equals(oc);
+    }
+
     public static boolean isWrappingClass(Class<?> oc) { // TODO Adapt if outside of VM
         return Integer.class.equals(oc) || Long.class.equals(oc) || Double.class.equals(oc) || Float.class.equals(oc) ||
                 Short.class.equals(oc) || Byte.class.equals(oc) || Boolean.class.equals(oc);

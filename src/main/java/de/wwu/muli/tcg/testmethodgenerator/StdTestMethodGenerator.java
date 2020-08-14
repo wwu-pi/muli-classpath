@@ -32,7 +32,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     protected Indentator indentator;
 
     public StdTestMethodGenerator(Indentator indentator) {
-        this(indentator, "10e-6", new Class[]{Collection.class, Map.class});
+        this(indentator, "10e-6", Collection.class, Map.class);
     }
 
     public StdTestMethodGenerator(Indentator indentator, String assertEqualsDelta, Class<?>... specialCases) {
@@ -154,8 +154,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         return ""; // TODO
     }
 
-
-    protected String generateWrappingString(Object o) { // TODO Adapt if outside of VM
+    protected String generateWrappingString(Object o) {
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(o.getClass().getSimpleName());
@@ -165,11 +164,25 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
             Field valueField = o.getClass().getDeclaredField("value");
             boolean accessible = valueField.isAccessible();
             valueField.setAccessible(true);
+            sb.append(addCastIfNeeded(o.getClass()));
             sb.append(valueField.get(o)).append(";\r\n");
             valueField.setAccessible(accessible);
             return sb.toString();
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected boolean wrappingClassNeedsCast(Class<?> oc) {
+        return oc.equals(Float.class) || oc.equals(Short.class) || oc.equals(Byte.class);
+    }
+
+    protected String addCastIfNeeded(Class<?> oc) {
+        if (wrappingClassNeedsCast(oc)) {
+            // Float, Byte, or Short
+            return "(" + toFirstLower(oc.getSimpleName()) + ") ";
+        } else {
+            return "";
         }
     }
 
@@ -308,6 +321,9 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         }
         sb.append(generateTestedMethodCallString("TODO", inputObjectNames)); // TODO
         if (outputObject != null) {
+            if (isFloatingPointClass(outputObject.getClass())) {
+                sb.append(", ").append(assertEqualsDelta);
+            }
             sb.append(")");
         }
         sb.append(";\r\n");
