@@ -8,7 +8,7 @@ public class TestCase<T> {
     private String fullClassName;
     private Object[] inputs;
     private T output;
-    private BitSet coveredInstructions;
+    private BitSet cover;
 
     public String getMethodName() {
         return methodName;
@@ -42,12 +42,12 @@ public class TestCase<T> {
         this.inputs = inputs;
     }
 
-    public BitSet getCoveredInstructions() {
-        return coveredInstructions;
+    public BitSet getCover() {
+        return cover;
     }
 
-    public void setCoveredInstructions(BitSet coveredInstructions) {
-        this.coveredInstructions = coveredInstructions;
+    public void setCover(BitSet cover) {
+        this.cover = cover;
     }
 
     public void setOutput(T output) {
