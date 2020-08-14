@@ -9,14 +9,14 @@ import de.wwu.muli.tcg.testsetreducer.NullTestSetReducer;
 import de.wwu.muli.tcg.testsetreducer.TestSetReducer;
 import de.wwu.muli.tcg.testsetsorter.NullTestSetSorter;
 import de.wwu.muli.tcg.testsetsorter.TestSetSorter;
-import de.wwu.muli.tcg.utility.Indentator;
+import de.wwu.muli.tcg.utility.Indentation;
 
 import java.util.*;
 
 public class TestCaseGenerator {
 
     private static TestCaseGenerator instance;
-    protected final Indentator indentator;
+    protected final Indentation indentation;
     protected TestClassGenerator testClassGenerator;
     protected TestMethodGenerator testMethodGenerator;
     protected TestSetReducer testSetReducer;
@@ -25,9 +25,9 @@ public class TestCaseGenerator {
     protected String packageName = "test"; // TODO
 
     private TestCaseGenerator() {
-        indentator = new Indentator.TabIndentator();
-        testMethodGenerator = new StdTestMethodGenerator(indentator);
-        testClassGenerator = new StdTestClassGenerator(indentator);
+        indentation = Indentation.withTab();
+        testMethodGenerator = new StdTestMethodGenerator(indentation);
+        testClassGenerator = new StdTestClassGenerator(indentation);
 
     }
 

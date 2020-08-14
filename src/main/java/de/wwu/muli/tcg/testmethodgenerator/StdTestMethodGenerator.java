@@ -1,7 +1,7 @@
 package de.wwu.muli.tcg.testmethodgenerator;
 
 import de.wwu.muli.solution.TestCase;
-import de.wwu.muli.tcg.utility.Indentator;
+import de.wwu.muli.tcg.utility.Indentation;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -31,17 +31,17 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     protected String testedClassName;
     // Name of method for which test cases are generated
     protected String testedMethodName;
-    protected Indentator indentator;
+    protected Indentation indentation;
 
-    public StdTestMethodGenerator(Indentator indentator) {
-        this(indentator, "10e-6", Collection.class, Map.class);
+    public StdTestMethodGenerator(Indentation indentation) {
+        this(indentation, "10e-6", Collection.class, Map.class);
     }
 
-    public StdTestMethodGenerator(Indentator indentator, String assertEqualsDelta, Class<?>... specialCases) {
+    public StdTestMethodGenerator(Indentation indentation, String assertEqualsDelta, Class<?>... specialCases) {
         this.assertEqualsDelta = assertEqualsDelta;
         this.specialCases = specialCases;
         encounteredTypes = new HashSet<>();
-        this.indentator = indentator;
+        this.indentation = indentation;
     }
 
     @Override
@@ -89,9 +89,9 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(generateTestMethodAnnotations(tc));
         sb.append(generateTestMethodDeclaration(tc));
-        sb.append(indentator.indentBlock(generateStringsForInputs(tc.getInputs())));
-        sb.append(indentator.indentBlock(generateStringForOutput(tc.getOutput())));
-        sb.append(indentator.indentBlock(generateAssertionString()));
+        sb.append(indentation.indentBlock(generateStringsForInputs(tc.getInputs())));
+        sb.append(indentation.indentBlock(generateStringForOutput(tc.getOutput())));
+        sb.append(indentation.indentBlock(generateAssertionString()));
         sb.append(generateTestMethodEnd());
         return sb.toString();
     }

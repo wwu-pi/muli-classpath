@@ -1,15 +1,15 @@
 package de.wwu.muli.tcg.testclassgenerator;
 
-import de.wwu.muli.tcg.utility.Indentator;
+import de.wwu.muli.tcg.utility.Indentation;
 
 import java.util.*;
 
 public class StdTestClassGenerator implements TestClassGenerator {
 
-    protected final Indentator indentator;
+    protected final Indentation indentation;
 
-    public StdTestClassGenerator(Indentator indentator) {
-        this.indentator = indentator;
+    public StdTestClassGenerator(Indentation indentation) {
+        this.indentation = indentation;
     }
 
     @Override
@@ -23,13 +23,13 @@ public class StdTestClassGenerator implements TestClassGenerator {
         sb.append(generateTestClassAnnotations());
         sb.append(generateTestClassDeclaration(testedClassName));
         sb.append(generateClassAttributes());
-        sb.append(indentator.indentBlock(generateBeforeClassMethod()));
-        sb.append(indentator.indentBlock(generateAfterClassMethod()));
-        sb.append(indentator.indentBlock(generateBeforeMethod()));
-        sb.append(indentator.indentBlock(generateAfterMethod()));
+        sb.append(indentation.indentBlock(generateBeforeClassMethod()));
+        sb.append(indentation.indentBlock(generateAfterClassMethod()));
+        sb.append(indentation.indentBlock(generateBeforeMethod()));
+        sb.append(indentation.indentBlock(generateAfterMethod()));
 
         for (String testMethodString : testMethodStrings) {
-            sb.append(indentator.indentBlock(testMethodString)).append("\r\n");
+            sb.append(indentation.indentBlock(testMethodString)).append("\r\n");
         }
 
         sb.append(generateClassEnd());
