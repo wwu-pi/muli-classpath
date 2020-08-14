@@ -5,6 +5,7 @@ import java.util.BitSet;
 public class TestCase<T> {
     private String methodName;
     private String className;
+    private String fullClassName;
     private Object[] inputs;
     private T output;
     private BitSet coveredInstructions;
@@ -23,6 +24,14 @@ public class TestCase<T> {
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public String getFullClassName() {
+        return fullClassName;
+    }
+
+    public void setFullClassName(String fullClassName) {
+        this.fullClassName = fullClassName;
     }
 
     public Object[] getInputs() {

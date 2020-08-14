@@ -25,6 +25,8 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     protected Object outputObject = null;
     // An identifier for the currently generated test
     protected int numberOfTest = 0;
+    // Full name of class for which test cases are generated
+    protected String fullTestedClassName;
     // Name of class for which test cases are generated
     protected String testedClassName;
     // Name of method for which test cases are generated
@@ -51,14 +53,19 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected void before(TestCase<?> tc) {
-        if (testedClassName != null && testedMethodName != null) {
-            if (!testedClassName.equals(tc.getClassName()) || !testedMethodName.equals(tc.getMethodName())) {
+        if (testedClassName != null && testedMethodName != null && testedClassName != null) {
+            if (!testedClassName.equals(tc.getClassName()) || !testedMethodName.equals(tc.getMethodName()) ||
+                fullTestedClassName.equals(tc.getFullClassName())) {
                 throw new UnsupportedOperationException("Test cases can only be generated for one specific method " +
                         "at a time.");
             }
         } else {
+            if (tc.getClassName() == null || tc.getMethodName() == null || tc.getFullClassName() == null) {
+                throw new IllegalArgumentException("The tested method's name and class name must be specified.");
+            }
             testedClassName = tc.getClassName();
             testedMethodName = tc.getMethodName();
+            fullTestedClassName = tc.getFullClassName();
         }
 
         inputObjects = tc.getInputs();
@@ -319,7 +326,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         if (outputObject != null) {
             sb.append("assertEquals(").append(outputObjectName).append(", ");
         }
-        sb.append(generateTestedMethodCallString("TODO", inputObjectNames)); // TODO
+        sb.append(generateTestedMethodCallString(inputObjectNames));
         if (outputObject != null) {
             if (isFloatingPointClass(outputObject.getClass())) {
                 sb.append(", ").append(assertEqualsDelta);
@@ -330,9 +337,9 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         return sb.toString();
     }
 
-    protected String generateTestedMethodCallString(String qualifiedClassName, String[] inputObjectNames) {
+    protected String generateTestedMethodCallString(String[] inputObjectNames) {
         StringBuilder sb = new StringBuilder();
-        sb.append(qualifiedClassName).append(".").append(testedMethodName).append("(");
+        sb.append(fullTestedClassName).append(".").append(testedMethodName).append("(");
         for (String s : inputObjectNames) {
             sb.append(s).append(",");
         }
