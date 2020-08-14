@@ -2,14 +2,19 @@ package de.wwu.muli.tcg.testsetsorter;
 
 import de.wwu.muli.solution.TestCase;
 
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Comparator;
 
-public class NullTestSetSorter implements TestSetSorter {
+public class NullTestSetSorter extends TestSetSorter {
 
-    @Override
-    public SortedSet<TestCase<?>> sortTestCases(Set<TestCase<?>> testCases) {
-        return new TreeSet<>(testCases);
+    public NullTestSetSorter() {
+        super(new NullTestCaseComparator());
     }
+
+    protected static class NullTestCaseComparator implements Comparator<TestCase<?>> {
+        @Override
+        public int compare(TestCase<?> o1, TestCase<?> o2) {
+            return 0;
+        }
+    }
+
 }

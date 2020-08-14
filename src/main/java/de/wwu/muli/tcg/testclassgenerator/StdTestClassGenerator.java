@@ -2,10 +2,7 @@ package de.wwu.muli.tcg.testclassgenerator;
 
 import de.wwu.muli.tcg.utility.Indentator;
 
-import java.util.Comparator;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 public class StdTestClassGenerator implements TestClassGenerator {
 
@@ -19,7 +16,7 @@ public class StdTestClassGenerator implements TestClassGenerator {
     public String generateTestClassString(String packageName,
                                           String testedClassName,
                                           Set<Class<?>> encounteredTypes,
-                                          SortedSet<String> testMethodStrings) {
+                                          List<String> testMethodStrings) {
         StringBuilder sb = new StringBuilder();
         sb.append(generatePackageDeclaration(packageName));
         sb.append(generateImports(encounteredTypes));
@@ -53,10 +50,16 @@ public class StdTestClassGenerator implements TestClassGenerator {
         encounteredTypes = sortEncounteredTypes(encounteredTypes);
 
         for (Class<?> typeToImport : encounteredTypes) {
-            sb.append("import ").append(typeToImport.getName()).append(";\r\n");
+            if (!omitFromImport(typeToImport)) {
+                sb.append("import ").append(typeToImport.getName()).append(";\r\n");
+            }
         }
         sb.append("\r\n\r\n");
         return sb.toString();
+    }
+
+    protected boolean omitFromImport(Class<?> type) {
+        return type.getName().startsWith("java.lang.");
     }
 
     protected SortedSet<Class<?>> sortEncounteredTypes(Set<Class<?>> encounteredTypes) {

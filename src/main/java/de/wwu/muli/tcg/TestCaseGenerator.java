@@ -51,7 +51,7 @@ public class TestCaseGenerator {
         // TODO Sort before or after?
         SortedSet<TestCase<?>> sortedTests = sortTestCases(tests);
 
-        SortedSet<String> stringsForTests = new TreeSet<>();
+        List<String> stringsForTests = new ArrayList<>();
 
         for (TestCase<?> tc : sortedTests) {
             stringsForTests.add(testCasesToString.get(tc));

@@ -9,9 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static de.wwu.muli.tcg.utility.Utility.toFirstLower;
-import static de.wwu.muli.tcg.utility.Utility.toFirstUpper;
-
+import static de.wwu.muli.tcg.utility.Utility.*;
 
 // TODO get fully qualified class name which is tested
 public class StdTestMethodGenerator implements TestMethodGenerator {
@@ -78,10 +76,6 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         numberOfTest++;
     }
 
-    protected void addToImports(Class<?> classToImport) {
-        encounteredTypes.add(classToImport);
-    }
-
     public Set<Class<?>> getEncounteredTypes() {
         return encounteredTypes;
     }
@@ -136,8 +130,8 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         if (isAlreadyCreated(o)) {
             return "";
         }
-        String objectArgumentName = generateNumberedArgumentName(o);
-        argumentNamesForObjects.put(o, objectArgumentName);
+        encounteredTypes.add(o.getClass());
+        generateNumberedArgumentName(o);
         if (isPrimitiveClass(o.getClass())) {
             return generatePrimitiveString(o);
         } else if (isWrappingClass(o.getClass())) {
@@ -153,22 +147,8 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         return argumentNamesForObjects.containsKey(o);
     }
 
-    protected boolean isNull(Object o) {
-        return o == null; // TODO probably more complex if in VM
-    }
-
     protected String generateNullString(Object o) {
         return "null";
-    }
-
-    protected boolean isWrappingClass(Class<?> oc) { // TODO Adapt if outside of VM
-        return Integer.class.equals(oc) || Long.class.equals(oc) || Double.class.equals(oc) || Float.class.equals(oc) ||
-                Short.class.equals(oc) || Byte.class.equals(oc) || Boolean.class.equals(oc);
-    }
-
-    protected boolean isPrimitiveClass(Class<?> oc) { // TODO Adapt if outside of VM
-        return int.class.equals(oc) || long.class.equals(oc) || double.class.equals(oc) || float.class.equals(oc) ||
-                short.class.equals(oc) || byte.class.equals(oc) || boolean.class.equals(oc);
     }
 
     protected String generatePrimitiveString(Object o) { // TODO Parameter type is bad...Object leads to auto-wrapping to Integer
@@ -193,10 +173,6 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         }
     }
 
-    protected boolean isStringClass(Class<?> oc) {
-        return oc.equals(String.class);
-    }
-
     protected String generateNumberedArgumentName(Object o) {
         String numberedArgumentNameForType = argumentNamesForObjects.get(o);
         if (numberedArgumentNameForType != null) {
@@ -210,6 +186,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         }
         numberedArgumentNameForType = argumentNameForType + currentNumberOfArgumentType;
         argumentNameToNumberOfOccurrences.put(argumentNameForType, currentNumberOfArgumentType + 1);
+        argumentNamesForObjects.put(o, numberedArgumentNameForType);
         return numberedArgumentNameForType;
     }
 
@@ -236,7 +213,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         return false;
     }
 
-    protected String generateSpecialCaseString(Object o) {
+    protected String generateSpecialCaseString(Object o) { // TODO Maps, Collections, ...
         throw new UnsupportedOperationException("No special cases for the StdTestCaseGenerator yet.");
     }
 
