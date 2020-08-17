@@ -46,7 +46,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
     public StdTestMethodGenerator(Indentation indentation, boolean assumeSetter, String assertEqualsDelta, Class<?>... specialCases) {
         this.assertEqualsDelta = assertEqualsDelta;
-        this.specialCases = new Class[]{};
+        this.specialCases = specialCases;
         encounteredTypes = new HashSet<>();
         this.indentation = indentation;
         this.assumeSetter = assumeSetter;
