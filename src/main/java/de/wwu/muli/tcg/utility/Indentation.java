@@ -12,7 +12,7 @@ public class Indentation {
         this.whiteSpace = whiteSpace;
     }
 
-    public String identLine(String line) {
+    public String indentLine(String line) {
         if (line == null || line.length() == 0) {
             return line;
         } else {

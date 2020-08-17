@@ -1,8 +1,10 @@
 package de.wwu.muli.tcg.testmethodgenerator;
 
 import de.wwu.muli.solution.TestCase;
+import de.wwu.muli.tcg.TestCaseGenerator;
 import de.wwu.muli.tcg.utility.Indentation;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -32,16 +34,38 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     // Name of method for which test cases are generated
     protected String testedMethodName;
     protected Indentation indentation;
+    protected boolean assumeSetter;
 
     public StdTestMethodGenerator(Indentation indentation) {
-        this(indentation, "10e-6", Collection.class, Map.class);
+        this(indentation, true, "10e-6", Collection.class, Map.class);
     }
 
-    public StdTestMethodGenerator(Indentation indentation, String assertEqualsDelta, Class<?>... specialCases) {
+    public StdTestMethodGenerator(Indentation indentation, boolean assumeSetter) {
+        this(indentation, assumeSetter, "10e-6", Collection.class, Map.class);
+    }
+
+    public StdTestMethodGenerator(Indentation indentation, boolean assumeSetter, String assertEqualsDelta, Class<?>... specialCases) {
         this.assertEqualsDelta = assertEqualsDelta;
-        this.specialCases = specialCases;
+        this.specialCases = new Class[]{};
         encounteredTypes = new HashSet<>();
         this.indentation = indentation;
+        this.assumeSetter = assumeSetter;
+    }
+
+    protected static void setWithReflection(Object setFor, String fieldName, Object setTo) {
+        if (fieldName.equals("this$0")) {
+            return;
+        }
+        try {
+            Class<?> setForClass = setFor.getClass();
+            Field setForField = setForClass.getDeclaredField(fieldName);
+            boolean accessible = setForField.isAccessible();
+            setForField.setAccessible(true);
+            setForField.set(setFor, setTo);
+            setForField.setAccessible(accessible);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -135,17 +159,65 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         if (isAlreadyCreated(o)) {
             return "";
         }
-        encounteredTypes.add(o.getClass());
+
+        Class<?> oc = o.getClass();
+        addToEncounteredTypes(oc);
         generateNumberedArgumentName(o);
-        if (isPrimitiveClass(o.getClass())) {
+        if (isPrimitiveClass(oc)) {
             return generatePrimitiveString(o);
-        } else if (isWrappingClass(o.getClass())) {
+        } else if (isWrappingClass(oc)) {
             return generateWrappingString(o);
-        } else if (isStringClass(o.getClass())) {
+        } else if (isStringClass(oc)) {
             return generateStringString(o);
+        } else if (isArray(oc)) {
+            return generateArrayString(o);
         } else {
             return generateObjectString(o);
         }
+
+    }
+
+    protected String generateArrayString(Object o) {
+        StringBuilder sb = new StringBuilder();
+        String arrayName = argumentNamesForObjects.get(o);
+        sb.append(o.getClass().getSimpleName())
+                .append(" ")
+                .append(arrayName)
+                .append(" = new ")
+                .append(o.getClass().getSimpleName())
+                .append("[")
+                .append(Array.getLength(o))
+                .append("]")
+                .append(";\r\n");
+
+        for (int i = 0; i < Array.getLength(o); i++) {
+            Object arrayElement = Array.get(o, i);
+            sb.append(generateElementString(arrayElement));
+            sb.append(arrayName)
+                    .append("[")
+                    .append(i)
+                    .append("] = ")
+                    .append(argumentNamesForObjects.get(arrayElement))
+                    .append(";\r\n");
+        }
+
+        return sb.toString();
+    }
+
+    protected void addToEncounteredTypes(Class<?> oc) {
+        if (oc.isArray()) {
+            try {
+                encounteredTypes.add(Class.forName(oc.getName().substring(1)));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            encounteredTypes.add(oc);
+        }
+    }
+
+    protected boolean isArray(Class<?> oc) {
+        return oc.getClass().isArray();
     }
 
     protected boolean isAlreadyCreated(Object o) {
@@ -211,7 +283,12 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected String getArgumentNameForType(Class<?> type) {
-        return toFirstLower(type.getSimpleName());
+        if (type.isArray()) {
+            String simpleName = type.getSimpleName();
+            return toFirstLower(simpleName.substring(0, simpleName.length() - 2)) + "Ar";
+        } else {
+            return toFirstLower(type.getSimpleName());
+        }
     }
 
     protected String generateObjectString(Object o) {
@@ -300,12 +377,23 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
             f.setAccessible(accessible);
             sb.append(generateElementString(fieldValue));
             String fieldValueArgumentName = argumentNamesForObjects.get(fieldValue);
-            sb.append(objectArgumentName)
-                    .append(".set")
-                    .append(toFirstUpper(fieldName))
-                    .append("(")
-                    .append(fieldValueArgumentName)
-                    .append(");\r\n");
+            if (assumeSetter) {
+                sb.append(objectArgumentName)
+                        .append(".set")
+                        .append(toFirstUpper(fieldName))
+                        .append("(")
+                        .append(fieldValueArgumentName)
+                        .append(");\r\n");
+            } else {
+                sb.append(TestCaseGenerator.REFLECTION_SETTER_METHOD_NAME)
+                        .append("(")
+                        .append(objectArgumentName)
+                        .append(", \"")
+                        .append(f.getName())
+                        .append("\", ")
+                        .append(fieldValueArgumentName)
+                        .append(");\r\n");
+            }
             return sb.toString();
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);

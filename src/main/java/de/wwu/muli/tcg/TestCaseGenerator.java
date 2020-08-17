@@ -15,6 +15,7 @@ import java.util.*;
 
 public class TestCaseGenerator {
 
+    public static final String REFLECTION_SETTER_METHOD_NAME = "setWithReflection";
     private static TestCaseGenerator instance;
     protected final Indentation indentation;
     protected TestClassGenerator testClassGenerator;

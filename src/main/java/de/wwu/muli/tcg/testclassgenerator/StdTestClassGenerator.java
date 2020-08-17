@@ -1,5 +1,6 @@
 package de.wwu.muli.tcg.testclassgenerator;
 
+import de.wwu.muli.tcg.TestCaseGenerator;
 import de.wwu.muli.tcg.utility.Indentation;
 
 import java.util.*;
@@ -7,9 +8,15 @@ import java.util.*;
 public class StdTestClassGenerator implements TestClassGenerator {
 
     protected final Indentation indentation;
+    protected boolean assumeSetter;
 
     public StdTestClassGenerator(Indentation indentation) {
+        this(indentation, true);
+    }
+
+    public StdTestClassGenerator(Indentation indentation, boolean assumeSetter) {
         this.indentation = indentation;
+        this.assumeSetter = assumeSetter;
     }
 
     @Override
@@ -23,6 +30,7 @@ public class StdTestClassGenerator implements TestClassGenerator {
         sb.append(generateTestClassAnnotations());
         sb.append(generateTestClassDeclaration(testedClassName));
         sb.append(generateClassAttributes());
+        sb.append(indentation.indentBlock(generateUtilityMethods()));
         sb.append(indentation.indentBlock(generateBeforeClassMethod()));
         sb.append(indentation.indentBlock(generateAfterClassMethod()));
         sb.append(indentation.indentBlock(generateBeforeMethod()));
@@ -86,6 +94,31 @@ public class StdTestClassGenerator implements TestClassGenerator {
 
     protected String generateClassAttributes() {
         return "";
+    }
+
+    protected String generateUtilityMethods() {
+        if (assumeSetter) {
+            return "";
+        } else {
+            return "protected void " + TestCaseGenerator.REFLECTION_SETTER_METHOD_NAME +
+                        "(Object setFor, String fieldName, Object setTo) {\r\n" +
+                    indentation.indentBlock(
+                            "if (fieldName.equals(\"this$0\")) {\r\n" +
+                            indentation.indentLine("return;\r\n") +
+                            "}\r\n" +
+                            "try { \r\n" +
+                            indentation.indentBlock(
+                                    "Class<?> setForClass = setFor.getClass();\r\n" +
+                                    "Field setForField = setForClass.getDeclaredField(fieldName);\r\n" +
+                                    "boolean accessible = setForField.isAccessible();\r\n" +
+                                    "setForField.setAccessible(true);\r\n" +
+                                    "setForField.set(setFor, setTo);\r\n" +
+                                    "setForField.setAccessible(accessible);\r\n") +
+                            "} catch (Exception e) {\r\n" +
+                            indentation.indentLine("throw new RuntimeException(e);\r\n") +
+                            "}\r\n") +
+                    "}\r\n";
+        }
     }
 
     protected String generateBeforeClassMethod() {
