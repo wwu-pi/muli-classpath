@@ -67,7 +67,7 @@ public class TestCaseGenerator {
     }
 
     public void acceptNewTestCase(TestCase<?> tc) {
-        testCasesToString.put(tc, testMethodGenerator.generateTestCaseStringRepresentation(tc));
+        testCasesToString.put(tc, testMethodGenerator.generateTestCaseStringRepresentation(tc)); // TODO Should be generated in the end (after reduction), not directly!
     }
 
     protected Set<TestCase<?>> reduceTestCases(Set<TestCase<?>> testCases) {

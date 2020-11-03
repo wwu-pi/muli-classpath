@@ -52,22 +52,6 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         this.assumeSetter = assumeSetter;
     }
 
-    protected static void setWithReflection(Object setFor, String fieldName, Object setTo) {
-        if (fieldName.equals("this$0")) {
-            return;
-        }
-        try {
-            Class<?> setForClass = setFor.getClass();
-            Field setForField = setForClass.getDeclaredField(fieldName);
-            boolean accessible = setForField.isAccessible();
-            setForField.setAccessible(true);
-            setForField.set(setFor, setTo);
-            setForField.setAccessible(accessible);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public String generateTestCaseStringRepresentation(TestCase<?> tc) {
         before(tc);
@@ -174,7 +158,6 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         } else {
             return generateObjectString(o);
         }
-
     }
 
     protected String generateArrayString(Object o) {

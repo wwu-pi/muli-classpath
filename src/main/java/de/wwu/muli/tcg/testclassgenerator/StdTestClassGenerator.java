@@ -99,11 +99,11 @@ public class StdTestClassGenerator implements TestClassGenerator {
     protected String generateUtilityMethods() {
         if (assumeSetter) {
             return "";
-        } else {
+        } else { // Utility method to use reflection instead of setters to set an object's field.
             return "protected void " + TestCaseGenerator.REFLECTION_SETTER_METHOD_NAME +
                         "(Object setFor, String fieldName, Object setTo) {\r\n" +
                     indentation.indentBlock(
-                            "if (fieldName.equals(\"this$0\")) {\r\n" +
+                            "if (fieldName.startsWith(\"this$\")) {\r\n" +
                             indentation.indentLine("return;\r\n") +
                             "}\r\n" +
                             "try { \r\n" +
