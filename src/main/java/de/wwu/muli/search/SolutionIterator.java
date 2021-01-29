@@ -10,21 +10,24 @@ import java.util.function.Supplier;
 
 public class SolutionIterator<T> implements Spliterator<Solution<T>> {
     private final Supplier<T> searchRegion;
-    private final Boolean wrapInputs;
+    private final String methodToTest;
     private final Boolean generateTestCase;
 
     public SolutionIterator(Supplier<T> searchRegion) {
-        this(searchRegion, false, false);
+        this(searchRegion, false, null);
     }
 
-    public SolutionIterator(Supplier<T> searchRegion, Boolean wrapInputs) {
-        this(searchRegion, wrapInputs, false);
-    }
-
-    public SolutionIterator(Supplier<T> searchRegion, Boolean wrapInputs, Boolean generateTestCase) {
+    public SolutionIterator(Supplier<T> searchRegion, Boolean generateTestCase, String methodToTest) {
         this.searchRegion = searchRegion;
-        this.wrapInputs = wrapInputs;
         this.generateTestCase = generateTestCase;
+        if (generateTestCase) {
+            if (methodToTest == null
+                    || methodToTest.length() == 0
+                    || !methodToTest.contains(".")) {
+                throw new IllegalArgumentException("If test cases are to be generated, a fully qualified method name must be specified.");
+            }
+        }
+        this.methodToTest = methodToTest;
     }
 
     @Override
@@ -55,12 +58,12 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
                 setVMActiveIterator(previousIterator); // Make previous iterator active (if any).
                 return false;
             }
-            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval, wrapInputs, generateTestCase);
+            oneSolution = (Solution<T>) wrapSolutionAndFullyBacktrackVM(retval, generateTestCase, methodToTest);
 
         } catch (Throwable e) {
             // This happens if searchRegion.get() threw an exception.restoreChoicePointStateNextChoiceVM
             // However, we consider exceptions as part of the solution.
-            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e, wrapInputs, generateTestCase);
+            oneSolution = (Solution<T>) wrapExceptionAndFullyBacktrackVM(e, generateTestCase, methodToTest);
         }
 
         Muli.setVMExecutionMode(previousMode); // Restore previous mode of VM.
@@ -78,8 +81,8 @@ public class SolutionIterator<T> implements Spliterator<Solution<T>> {
      * */
     private static native boolean replayInverseTrailForNextChoiceVM();
 
-    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, Boolean wrapInputs, Boolean generateTestCase);
-    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception, Boolean wrapInputs, Boolean generateTestCase);
+    private static native Solution<?> wrapSolutionAndFullyBacktrackVM(Object solution, Boolean generateTestCase, String methodToTest);
+    private static native Solution<?> wrapExceptionAndFullyBacktrackVM(Throwable exception, Boolean generateTestCase, String methodToTest);
 
     // Active search region / corresponding iterator.
     public static native SolutionIterator getVMActiveIterator();

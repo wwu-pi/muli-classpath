@@ -18,17 +18,12 @@ public class Muli {
         return StreamSupport.stream(iterator, false);
     }
 
-    public static <T> Stream<Solution<T>> muliWithInputs(Supplier<T> searchRegion,
-                                                         SearchStrategy strategy) {
-        SolutionIterator<T> iterator = new SolutionIterator<>(searchRegion, true);
-        setSearchStrategyVM(iterator, strategy);
-        return StreamSupport.stream(iterator, false);
-    }
-
     public static <T> Stream<Solution<T>> muliWithTestCases(Supplier<T> searchRegion,
-                                                            SearchStrategy strategy) {
-        SolutionIterator<T> iterator = new SolutionIterator<>(searchRegion, true, true);
+                                                            SearchStrategy strategy,
+                                                            String methodName) {
+        SolutionIterator<T> iterator = new SolutionIterator<>(searchRegion, true, methodName);
         setSearchStrategyVM(iterator, strategy);
+        setMethodForTCG(methodName);
         return StreamSupport.stream(iterator, false);
     }
 
@@ -59,6 +54,14 @@ public class Muli {
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static <T> Solution<T>[] getAllSolutions(Supplier<T> searchRegion, SearchStrategy strategy) {
         Stream<Solution<T>> search = Muli.<T>muli(searchRegion, strategy);
+        return (Solution<T>[]) search
+                .filter(x -> !x.isExceptionControlFlow())
+                .toArray((size) -> new Solution[size]);
+    }
+
+    @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
+    public static <T> Solution<T>[] getAllSolutionsWithTestCases(Supplier<T> searchRegion, String methodToTest) {
+        Stream<Solution<T>> search = Muli.<T>muliWithTestCases(searchRegion, SearchStrategy.DepthFirstSearch, methodToTest);
         return (Solution<T>[]) search
                 .filter(x -> !x.isExceptionControlFlow())
                 .toArray((size) -> new Solution[size]);
@@ -99,6 +102,8 @@ public class Muli {
 
     @SuppressWarnings({"WeakerAccess", "unused"}) // Public API
     public static native void setSearchStrategyVM(SolutionIterator iterator, SearchStrategy strategy);
+
+    public static native void setMethodForTCG(String methodName);
 
     public static native ExecutionMode getVMExecutionMode();
     public static native void setVMExecutionMode(ExecutionMode mode);

@@ -1,17 +1,20 @@
 package de.wwu.muli.solution;
 
+import java.util.BitSet;
+import java.util.LinkedHashMap;
+
 public class Solution<T> {
     public final T value;
-    public final Object[] inputs;
-    public TestCase<T> testCase;
+    public final TestCase<T> testCase;
 
     public Solution(T value) {
-        this(value, null);
+        this.value = value;
+        this.testCase = null;
     }
 
-    public Solution(T value, Object[] inputs) {
+    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, BitSet cover) {
         this.value = value;
-        this.inputs = inputs;
+        this.testCase = new TestCase<>(inputs, value, className, methodName, cover);
     }
 
     public boolean isExceptionControlFlow() {

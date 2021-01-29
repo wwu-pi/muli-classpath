@@ -1,57 +1,51 @@
 package de.wwu.muli.solution;
 
 import java.util.BitSet;
+import java.util.LinkedHashMap;
 
 public class TestCase<T> {
-    private String methodName;
-    private String className;
-    private String fullClassName;
-    private Object[] inputs;
-    private T output;
-    private BitSet cover;
+    private final String methodName;
+    private final String className;
+    private final String fullClassName;
+    private final LinkedHashMap<String, Object> inputs;
+    private final T output;
+    private final BitSet cover;
+
+    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, BitSet cover) {
+        this.inputs = inputs;
+        this.output = output;
+        this.fullClassName = fullClassName;
+        this.className = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+        this.methodName = methodName;
+        this.cover = cover;
+    }
 
     public String getMethodName() {
         return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
     }
 
     public String getClassName() {
         return className;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
     public String getFullClassName() {
         return fullClassName;
     }
 
-    public void setFullClassName(String fullClassName) {
-        this.fullClassName = fullClassName;
-    }
-
     public Object[] getInputs() {
-        return inputs;
+        return inputs.values().toArray(new Object[0]);
     }
 
-    public void setInputs(Object[] inputs) {
-        this.inputs = inputs;
+    public Object getInput(String argName) {
+        return inputs.get(argName);
+    }
+
+    public LinkedHashMap<String, Object> getNamesAndInputs() {
+        return inputs;
     }
 
     public BitSet getCover() {
         return cover;
-    }
-
-    public void setCover(BitSet cover) {
-        this.cover = cover;
-    }
-
-    public void setOutput(T output) {
-        this.output = output;
     }
 
     public T getOutput() {
