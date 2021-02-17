@@ -10,17 +10,18 @@ import java.util.*;
 
 import static de.wwu.muli.tcg.utility.Utility.*;
 
-// TODO get fully qualified class name which is tested
 public class StdTestMethodGenerator implements TestMethodGenerator {
     protected final Class<?>[] specialCases;
     protected final String assertEqualsDelta;
     protected final Set<Class<?>> encounteredTypes;
     // Temporary store for objects and their argument name in the test method
     // Should be cleared after the String for the TestCase-object was generated.
-    protected final Map<Object, String> argumentNamesForObjects = new HashMap<>();
+    protected Map<Object, String> argumentNamesForObjects = new HashMap<>();
     // Temporary stores for object types (represented as strings) how many of them are already within a method.
     // Should be cleared after the String for the TestCase-object was generated.
-    protected final Map<String, Integer> argumentNameToNumberOfOccurrences = new HashMap<>();
+    protected Map<String, Integer> argumentNameToNumberOfOccurrences = new HashMap<>();
+    protected boolean isObjectMethod;
+    protected String objectCalleeIdentifier;
     // Temporary stores all input objects
     protected Object[] inputObjects = null;
     // Temporary stores all output objects;
@@ -28,28 +29,31 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     // An identifier for the currently generated test
     protected int numberOfTest = 0;
     // Full name of class for which test cases are generated
-    protected String fullTestedClassName;
+    protected final String fullTestedClassName;
     // Name of class for which test cases are generated
-    protected String testedClassName;
+    protected final String testedClassName;
     // Name of method for which test cases are generated
-    protected String testedMethodName;
+    protected final String testedMethodName;
     protected Indentation indentation;
-    protected boolean assumeSetter;
+    protected final boolean assumeSetter;
 
-    public StdTestMethodGenerator(Indentation indentation) {
-        this(indentation, true, "10e-6", Collection.class, Map.class);
+    public StdTestMethodGenerator(Indentation indentation, String fullTestedClassName, String testedClassName, String testedMethodName) {
+        this(indentation, fullTestedClassName, testedClassName, testedMethodName, true, "10e-6", Collection.class, Map.class);
     }
 
-    public StdTestMethodGenerator(Indentation indentation, boolean assumeSetter) {
-        this(indentation, assumeSetter, "10e-6", Collection.class, Map.class);
+    public StdTestMethodGenerator(Indentation indentation, String fullTestedClassName, String testedClassName, String testedMethodName, boolean assumeSetter) {
+        this(indentation, fullTestedClassName, testedClassName, testedMethodName, assumeSetter, "10e-6", Collection.class, Map.class);
     }
 
-    public StdTestMethodGenerator(Indentation indentation, boolean assumeSetter, String assertEqualsDelta, Class<?>... specialCases) {
+    public StdTestMethodGenerator(Indentation indentation, String fullTestedClassName, String testedClassName, String testedMethodName, boolean assumeSetter, String assertEqualsDelta, Class<?>... specialCases) {
         this.assertEqualsDelta = assertEqualsDelta;
         this.specialCases = specialCases;
         encounteredTypes = new HashSet<>();
         this.indentation = indentation;
         this.assumeSetter = assumeSetter;
+        this.fullTestedClassName = fullTestedClassName;
+        this.testedClassName = testedClassName;
+        this.testedMethodName = testedMethodName;
     }
 
     @Override
@@ -61,29 +65,22 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected void before(TestCase<?> tc) {
-        if (testedClassName != null && testedMethodName != null && testedClassName != null) {
-            if (!testedClassName.equals(tc.getClassName()) || !testedMethodName.equals(tc.getMethodName()) ||
-                fullTestedClassName.equals(tc.getFullClassName())) {
+        if (!testedClassName.equals(tc.getClassName()) || !testedMethodName.equals(tc.getMethodName()) ||
+                !fullTestedClassName.equals(tc.getFullClassName())) {
                 throw new UnsupportedOperationException("Test cases can only be generated for one specific method " +
                         "at a time.");
-            }
-        } else {
-            if (tc.getClassName() == null || tc.getMethodName() == null || tc.getFullClassName() == null) {
-                throw new IllegalArgumentException("The tested method's name and class name must be specified.");
-            }
-            testedClassName = tc.getClassName();
-            testedMethodName = tc.getMethodName();
-            fullTestedClassName = tc.getFullClassName();
         }
-
+        isObjectMethod = tc.getInput("this") != null;
         inputObjects = tc.getInputs();
         outputObject = tc.getOutput();
         argumentNamesForObjects.put(null, "null");
     }
 
     protected void after(TestCase<?> tc) {
-        argumentNamesForObjects.clear();
-        argumentNameToNumberOfOccurrences.clear();
+        argumentNamesForObjects = new HashMap<>();
+        argumentNameToNumberOfOccurrences = new HashMap<>();
+        isObjectMethod = false;
+        objectCalleeIdentifier = null;
         inputObjects = null;
         outputObject = null;
         numberOfTest++;
@@ -130,8 +127,11 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
     protected String generateStringsForInputs(Object[] inputs) {
         StringBuilder sb = new StringBuilder();
-        for (Object input : inputs) {
-            sb.append(generateElementString(input));
+        for (int i = 0; i < inputs.length; i++) {
+            sb.append(generateElementString(inputs[i]));
+            if (i == 0 && isObjectMethod) {
+                objectCalleeIdentifier = argumentNamesForObjects.get(inputObjects[i]);
+            }
         }
         return sb.toString();
     }
@@ -207,13 +207,12 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         return argumentNamesForObjects.containsKey(o);
     }
 
-    protected String generateNullString(Object o) {
-        return "null;\r\n";
-    }
-
     protected String generatePrimitiveString(Object o) {
-        // TODO Parameter type is bad...Object leads to auto-wrapping to Integer; is this problematic?
-        return ""; // TODO
+        StringBuilder sb = new StringBuilder();
+        sb.append(o.getClass().getSimpleName());
+        sb.append(argumentNamesForObjects.get(o));
+        sb.append(" = ").append(o);
+        return sb.toString();
     }
 
     protected String generateWrappingString(Object o) {
@@ -410,11 +409,21 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
     protected String generateTestedMethodCallString(String[] inputObjectNames) {
         StringBuilder sb = new StringBuilder();
-        sb.append(fullTestedClassName).append(".").append(testedMethodName).append("(");
-        for (String s : inputObjectNames) {
-            sb.append(s).append(",");
+        if (isObjectMethod) {
+            sb.append(objectCalleeIdentifier);
+        } else {
+            sb.append(fullTestedClassName);
         }
-        sb.delete(sb.length()-1, sb.length());
+        sb.append(".").append(testedMethodName).append("(");
+        for (int i = 0; i < inputObjectNames.length; i++) {
+            if (i == 0 && isObjectMethod) {
+                continue;
+            }
+            sb.append(inputObjectNames[i]).append(",");
+        }
+        if (inputObjectNames.length - (isObjectMethod ? 1 : 0) != 0) {
+            sb.delete(sb.length() - 1, sb.length());
+        }
         sb.append(")");
         return sb.toString();
     }

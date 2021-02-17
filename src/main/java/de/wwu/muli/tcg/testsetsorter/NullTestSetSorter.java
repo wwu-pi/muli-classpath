@@ -13,7 +13,7 @@ public class NullTestSetSorter extends TestSetSorter {
     protected static class NullTestCaseComparator implements Comparator<TestCase<?>> {
         @Override
         public int compare(TestCase<?> o1, TestCase<?> o2) {
-            return 0;
+            return o1.getTestNumber() < o2.getTestNumber() ? -1 : 1;
         }
     }
 

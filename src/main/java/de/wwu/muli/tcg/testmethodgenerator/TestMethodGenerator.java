@@ -6,7 +6,7 @@ import java.util.Set;
 
 public interface TestMethodGenerator {
 
-    String generateTestCaseStringRepresentation(TestCase<?> tc); // TODO method name
+    String generateTestCaseStringRepresentation(TestCase<?> tc);
 
     Set<Class<?>> getEncounteredTypes();
 
