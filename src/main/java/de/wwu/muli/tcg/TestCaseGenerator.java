@@ -100,7 +100,6 @@ public class TestCaseGenerator {
     protected List<String> generateStringRepresentation(SortedSet<TestCase<?>> testCases) {
         List<String> stringsForTests = new ArrayList<>();
         for (TestCase<?> tc : testCases) {
-            System.out.println("Added tc as repr: " + tc);
             stringsForTests.add(testMethodGenerator.generateTestCaseStringRepresentation(tc));
         }
         return stringsForTests;

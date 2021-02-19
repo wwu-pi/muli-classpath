@@ -188,12 +188,15 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected void addToEncounteredTypes(Class<?> oc) {
+        if (oc.isPrimitive()) {
+            return;
+        }
         if (oc.isArray()) {
-            try {
-                encounteredTypes.add(Class.forName(oc.getName().substring(1)));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+            Class<?> componentClass = oc.getComponentType();
+            if (componentClass.isPrimitive()) {
+                return;
             }
+            encounteredTypes.add(componentClass);
         } else {
             encounteredTypes.add(oc);
         }
@@ -344,9 +347,16 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         Field[] fields = o.getClass().getDeclaredFields();
         String objectArgumentName = argumentNamesForObjects.get(o);
         for (Field f : fields) {
+            if (skipField(f)) {
+                continue;
+            }
             sb.append(generateSetStatementForObject(objectArgumentName, o, f));
         }
         return sb.toString();
+    }
+
+    protected boolean skipField(Field f) {
+        return f.getName().contains("jacoco");
     }
 
     protected String generateSetStatementForObject(String objectArgumentName, Object o, Field f) {

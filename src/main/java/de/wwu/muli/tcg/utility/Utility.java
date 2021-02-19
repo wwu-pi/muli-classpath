@@ -19,12 +19,12 @@ public class Utility {
         return Double.class.equals(oc) || Float.class.equals(oc) || double.class.equals(oc) || float.class.equals(oc);
     }
 
-    public static boolean isWrappingClass(Class<?> oc) { // TODO Adapt if outside of VM
+    public static boolean isWrappingClass(Class<?> oc) {
         return Integer.class.equals(oc) || Long.class.equals(oc) || Double.class.equals(oc) || Float.class.equals(oc) ||
                 Short.class.equals(oc) || Byte.class.equals(oc) || Boolean.class.equals(oc);
     }
 
-    public static boolean isPrimitiveClass(Class<?> oc) { // TODO Adapt if outside of VM
+    public static boolean isPrimitiveClass(Class<?> oc) {
         return int.class.equals(oc) || long.class.equals(oc) || double.class.equals(oc) || float.class.equals(oc) ||
                 short.class.equals(oc) || byte.class.equals(oc) || boolean.class.equals(oc);
     }
