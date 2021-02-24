@@ -1,6 +1,5 @@
 package de.wwu.muli.solution;
 
-import java.util.BitSet;
 import java.util.LinkedHashMap;
 
 public class Solution<T> {
@@ -12,7 +11,7 @@ public class Solution<T> {
         this.testCase = null;
     }
 
-    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, BitSet cover) {
+    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, boolean[] cover) {
         this.value = value;
         this.testCase = new TestCase<>(inputs, value, className, methodName, cover);
     }

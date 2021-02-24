@@ -11,9 +11,9 @@ public class TestCase<T> {
     private final String fullClassName;
     private final LinkedHashMap<String, Object> inputs;
     private final T output;
-    private final BitSet cover;
+    private final boolean[] cover;
 
-    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, BitSet cover) {
+    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, boolean[] cover) {
         testNumber = testCounter++;
         this.inputs = inputs;
         this.output = output;
@@ -48,7 +48,13 @@ public class TestCase<T> {
     }
 
     public BitSet getCover() {
-        return cover;
+        BitSet result = new BitSet();
+        for (int i = 0; i < cover.length; i++) {
+            if (cover[i]) {
+                result.set(i);
+            }
+        }
+        return result;
     }
 
     public T getOutput() {
