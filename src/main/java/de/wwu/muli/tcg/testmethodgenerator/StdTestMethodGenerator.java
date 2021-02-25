@@ -155,6 +155,12 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
             return generateStringString(o);
         } else if (isArray(oc)) {
             return generateArrayString(o);
+        } else if(oc.isArray()){
+            if(oc.getComponentType().isArray()){
+                return generateMultiArrayString(o);
+            } else {
+                return generateArrayString(o);
+            }
         } else {
             return generateObjectString(o);
         }
@@ -163,13 +169,53 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
     protected String generateArrayString(Object o) {
         StringBuilder sb = new StringBuilder();
         String arrayName = argumentNamesForObjects.get(o);
+        String type = o.getClass().getSimpleName();
+        int index = type.indexOf("[");
+        if(index != -1){
+            type = type.substring(0, index);
+        }
         sb.append(o.getClass().getSimpleName())
                 .append(" ")
                 .append(arrayName)
                 .append(" = new ")
-                .append(o.getClass().getSimpleName())
+                .append(type)
                 .append("[")
                 .append(Array.getLength(o))
+                .append("]")
+                .append(";\r\n");
+
+        for (int i = 0; i < Array.getLength(o); i++) {
+            Object arrayElement = Array.get(o, i);
+            sb.append(generateElementString(arrayElement));
+            sb.append(arrayName)
+                    .append("[")
+                    .append(i)
+                    .append("] = ")
+                    .append(argumentNamesForObjects.get(arrayElement))
+                    .append(";\r\n");
+        }
+
+        return sb.toString();
+    }
+
+    protected String generateMultiArrayString(Object o) {
+        StringBuilder sb = new StringBuilder();
+        String arrayName = argumentNamesForObjects.get(o);
+        String type = o.getClass().getSimpleName();
+        int index = type.indexOf("[");
+        if(index != -1){
+            type = type.substring(0, index);
+        }
+        sb.append(o.getClass().getSimpleName())
+                .append(" ")
+                .append(arrayName)
+                .append(" = new ")
+                .append(type)
+                .append("[")
+                .append(Array.getLength(o))
+                .append("]")
+                .append("[")
+                .append(Array.getLength(Array.get(o, 0)))
                 .append("]")
                 .append(";\r\n");
 
@@ -269,8 +315,13 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
 
     protected String getArgumentNameForType(Class<?> type) {
         if (type.isArray()) {
-            String simpleName = type.getSimpleName();
-            return toFirstLower(simpleName.substring(0, simpleName.length() - 2)) + "Ar";
+            if(type.getComponentType().isArray()) {
+                String simpleName = type.getSimpleName();
+                return toFirstLower(simpleName.substring(0, simpleName.length() - 4)) + "Ar";
+            } else {
+                String simpleName = type.getSimpleName();
+                return toFirstLower(simpleName.substring(0, simpleName.length() - 2)) + "Ar";
+            }
         } else {
             return toFirstLower(type.getSimpleName());
         }
