@@ -19,6 +19,7 @@ public class SimpleForwardsTestSetReducer implements TestSetReducer {
             newCover.or(tc.getCover());
             if (currentCover.cardinality() < newCover.cardinality()) {
                 result.add(tc);
+                currentCover = newCover;
             }
         }
 

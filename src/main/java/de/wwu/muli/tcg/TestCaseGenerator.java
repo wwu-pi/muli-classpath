@@ -7,7 +7,7 @@ import de.wwu.muli.tcg.testclassgenerator.TestClassGenerator;
 import de.wwu.muli.tcg.testmethodgenerator.StdTestMethodGenerator;
 import de.wwu.muli.tcg.testmethodgenerator.TestMethodGenerator;
 import de.wwu.muli.tcg.testsetreducer.NullTestSetReducer;
-import de.wwu.muli.tcg.testsetreducer.TestSetReducer;
+import de.wwu.muli.tcg.testsetreducer.*;
 import de.wwu.muli.tcg.testsetsorter.NullTestSetSorter;
 import de.wwu.muli.tcg.testsetsorter.TestSetSorter;
 import de.wwu.muli.tcg.utility.Indentation;
@@ -40,7 +40,7 @@ public class TestCaseGenerator {
         this.fullTestedClassName = fullTestedClassName;
         this.testedClassName = testedClassName;
         this.testedMethodName = testedMethodName;
-        this.testCases = Collections.unmodifiableSet(testCases);
+        this.testCases = testCases;
         indentation = Indentation.withTab();
         testMethodGenerator = new StdTestMethodGenerator(indentation, fullTestedClassName, testedClassName, testedMethodName);
         testClassGenerator = new StdTestClassGenerator(indentation);
@@ -117,5 +117,9 @@ public class TestCaseGenerator {
             testSetSorter = new NullTestSetSorter();
         }
         return testSetSorter.sortTestCases(testCases);
+    }
+
+    public void setTestSetReducer(TestSetReducer reducer){
+        this.testSetReducer = reducer;
     }
 }

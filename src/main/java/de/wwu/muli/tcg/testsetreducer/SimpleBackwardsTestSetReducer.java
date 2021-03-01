@@ -2,21 +2,21 @@ package de.wwu.muli.tcg.testsetreducer;
 
 import de.wwu.muli.solution.TestCase;
 
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class SimpleBackwardsTestSetReducer implements TestSetReducer {
 
     @Override @SuppressWarnings("unchecked")
     public Set<TestCase<?>> reduceTestSet(Set<TestCase<?>> testCases) {
         Set<TestCase<?>> result;
+        // Try to preserve the characteristics of the set structure, e.g., order:
         try { // Try to preserve the characteristics of the set structure, e.g., order:
             result = (Set<TestCase<?>>) testCases.getClass().newInstance();
             result.addAll(testCases);
         } catch (IllegalAccessException | InstantiationException e) {
             result = new HashSet<>(testCases);
         }
+
 
         // Get the total achievable cover given the set of test cases:
         BitSet overallCover = calculateOverallCover(testCases);
@@ -30,7 +30,7 @@ public class SimpleBackwardsTestSetReducer implements TestSetReducer {
             }
         }
 
-        return null;
+        return result;
     }
 
     protected static BitSet calculateOverallCover(Set<TestCase<?>> testCases) {
