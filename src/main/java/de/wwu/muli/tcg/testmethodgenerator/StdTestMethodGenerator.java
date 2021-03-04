@@ -454,8 +454,10 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         }
         String outputObjectName = argumentNamesForObjects.get(outputObject);
         StringBuilder sb = new StringBuilder();
-        if (outputObject != null) {
+        if (outputObject != null && !outputObject.getClass().isArray()) {
             sb.append("assertEquals(").append(outputObjectName).append(", ");
+        } else if (outputObject != null && outputObject.getClass().isArray()) {
+            sb.append("assertArrayEquals(").append(outputObjectName).append(", ");
         }
         sb.append(generateTestedMethodCallString(inputObjectNames));
         if (outputObject != null) {

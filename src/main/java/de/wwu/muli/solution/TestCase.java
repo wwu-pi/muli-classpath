@@ -1,5 +1,6 @@
 package de.wwu.muli.solution;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.LinkedHashMap;
 
@@ -63,5 +64,9 @@ public class TestCase<T> {
 
     public int getTestNumber() {
         return testNumber;
+    }
+
+    public String toString() {
+        return "TestCase{" + Arrays.toString(cover) + "}";
     }
 }
