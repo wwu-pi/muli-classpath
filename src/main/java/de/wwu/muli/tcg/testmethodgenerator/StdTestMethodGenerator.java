@@ -242,7 +242,7 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
             if (componentClass.isPrimitive()) {
                 return;
             }
-            encounteredTypes.add(componentClass);
+            addToEncounteredTypes(componentClass);
         } else {
             encounteredTypes.add(oc);
         }
