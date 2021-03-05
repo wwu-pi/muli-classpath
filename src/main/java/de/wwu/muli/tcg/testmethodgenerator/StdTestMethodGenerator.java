@@ -3,6 +3,7 @@ package de.wwu.muli.tcg.testmethodgenerator;
 import de.wwu.muli.solution.TestCase;
 import de.wwu.muli.tcg.TestCaseGenerator;
 import de.wwu.muli.tcg.utility.Indentation;
+import de.wwu.muli.tcg.utility.Utility;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -455,7 +456,27 @@ public class StdTestMethodGenerator implements TestMethodGenerator {
         String outputObjectName = argumentNamesForObjects.get(outputObject);
         StringBuilder sb = new StringBuilder();
         if (outputObject != null && !outputObject.getClass().isArray()) {
-            sb.append("assertEquals(").append(outputObjectName).append(", ");
+            sb.append("assertEquals(");
+            if (Utility.isWrappingClass(outputObject.getClass())) {
+                if (outputObject instanceof Integer) {
+                    sb.append("(int)");
+                } else if (outputObject instanceof Long) {
+                    sb.append("(long)");
+                } else if (outputObject instanceof Double) {
+                    sb.append("(double)");
+                } else if (outputObject instanceof Float) {
+                    sb.append("(float)");
+                } else if (outputObject instanceof Short) {
+                    sb.append("(short)");
+                } else if (outputObject instanceof Byte) {
+                    sb.append("(byte)");
+                } else if (outputObject instanceof Character) {
+                    sb.append("(char)");
+                } else if (outputObject instanceof Boolean) {
+                    sb.append("(boolean)");
+                }
+            }
+            sb.append(outputObjectName).append(", ");
         } else if (outputObject != null && outputObject.getClass().isArray()) {
             sb.append("assertArrayEquals(").append(outputObjectName).append(", ");
         }
