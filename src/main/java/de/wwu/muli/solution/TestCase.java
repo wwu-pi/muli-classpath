@@ -3,6 +3,7 @@ package de.wwu.muli.solution;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class TestCase<T> {
     private static int testCounter = 0;
@@ -12,9 +13,9 @@ public class TestCase<T> {
     private final String fullClassName;
     private final LinkedHashMap<String, Object> inputs;
     private final T output;
-    private final boolean[] cover;
+    private final Map<String, Object> cover;
 
-    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, boolean[] cover) {
+    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, Map<String, Object> cover) {
         testNumber = testCounter++;
         this.inputs = inputs;
         this.output = output;
@@ -48,14 +49,31 @@ public class TestCase<T> {
         return inputs;
     }
 
-    public BitSet getCover() {
+    public BitSet getCover(Map<String, Integer> lengthMap) {
         BitSet result = new BitSet();
-        for (int i = 0; i < cover.length; i++) {
-            if (cover[i]) {
-                result.set(i);
+        int i = 0;
+        for(Map.Entry<String, Integer> entry : lengthMap.entrySet()) {
+            String method = entry.getKey();
+            boolean[] coverageArray = new boolean[]{};
+            if(cover.containsKey(method)){
+                coverageArray = (boolean[]) cover.get(method);
+            }
+            int length = entry.getValue();
+            int j = 0;
+            int start = i;
+            while (i < start + length) {
+                if (j < coverageArray.length && coverageArray[j]) {
+                    result.set(i);
+                }
+                i++;
+                j++;
             }
         }
         return result;
+    }
+
+    public Map<String, Object> getCoverMap(){
+        return cover;
     }
 
     public T getOutput() {
@@ -67,6 +85,6 @@ public class TestCase<T> {
     }
 
     public String toString() {
-        return "TestCase{" + Arrays.toString(cover) + "}";
+        return "TestCase{"; //+ Arrays.toString(cover) + "}";
     }
 }

@@ -1,6 +1,7 @@
 package de.wwu.muli.solution;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Solution<T> {
     public final T value;
@@ -11,7 +12,7 @@ public class Solution<T> {
         this.testCase = null;
     }
 
-    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, boolean[] cover) {
+    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, Map<String, Object> cover) {
         this.value = value;
         this.testCase = new TestCase<>(inputs, value, className, methodName, cover);
     }
