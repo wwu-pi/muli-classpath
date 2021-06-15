@@ -1,9 +1,6 @@
 package de.wwu.muli.solution;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TestCase<T> {
     private static int testCounter = 0;
@@ -13,9 +10,9 @@ public class TestCase<T> {
     private final String fullClassName;
     private final LinkedHashMap<String, Object> inputs;
     private final T output;
-    private final Map<String, Object> cover;
+    private final Map<String, int[]> cover;
 
-    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, Map<String, Object> cover) {
+    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, Map<String, int[]> cover) {
         testNumber = testCounter++;
         this.inputs = inputs;
         this.output = output;
@@ -51,28 +48,21 @@ public class TestCase<T> {
 
     public BitSet getCover(Map<String, Integer> lengthMap) {
         BitSet result = new BitSet();
-        int i = 0;
         for(Map.Entry<String, Integer> entry : lengthMap.entrySet()) {
             String method = entry.getKey();
-            boolean[] coverageArray = new boolean[]{};
+            int[] coverageArray = new int[]{};
             if(cover.containsKey(method)){
-                coverageArray = (boolean[]) cover.get(method);
+                coverageArray = cover.get(method);
             }
             int length = entry.getValue();
-            int j = 0;
-            int start = i;
-            while (i < start + length) {
-                if (j < coverageArray.length && coverageArray[j]) {
-                    result.set(i);
-                }
-                i++;
-                j++;
+            for (int i : coverageArray) {
+                result.set(i);
             }
         }
         return result;
     }
 
-    public Map<String, Object> getCoverMap(){
+    public Map<String, int[]> getCoverMap(){
         return cover;
     }
 

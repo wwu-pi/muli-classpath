@@ -9,7 +9,7 @@ public class ExceptionSolution extends Solution<Object> {
         super(value);
     }
 
-    public ExceptionSolution(Object value, LinkedHashMap<String, Object> inputs, String className, String methodName, Map<String, Object> cover) {
+    public ExceptionSolution(Object value, LinkedHashMap<String, Object> inputs, String className, String methodName, Map<String, int[]> cover) {
         super(value, inputs, className, methodName, cover);
     }
 

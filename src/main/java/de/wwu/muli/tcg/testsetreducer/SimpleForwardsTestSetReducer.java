@@ -28,17 +28,18 @@ public class SimpleForwardsTestSetReducer implements TestSetReducer {
     protected static Map<String, Integer> getLengthMap(Set<TestCase<?>> testCases){
         Map<String, Integer> lengthMap = new LinkedHashMap<>();
         for (TestCase<?> tc : testCases) {
-            Map<String, Object> coverMap = tc.getCoverMap();
-            for(Map.Entry<String, Object> entry : coverMap.entrySet()) {
-                boolean[] coverageArray = (boolean[]) entry.getValue();
+            Map<String, int[]> coverMap = tc.getCoverMap();
+            for(Map.Entry<String, int[]> entry : coverMap.entrySet()) {
+                int[] coverageArray = entry.getValue();
                 String method = entry.getKey();
+                int maxNumber = Arrays.stream(coverageArray).max().orElseGet(() -> 0);
                 if(lengthMap.containsKey(method)){
                     int length = lengthMap.get(method);
-                    if(length < coverageArray.length){
-                        lengthMap.put(method, coverageArray.length);
+                    if(length < maxNumber){
+                        lengthMap.put(method, maxNumber);
                     }
                 } else {
-                    lengthMap.put(method, coverageArray.length);
+                    lengthMap.put(method, maxNumber);
                 }
             }
         }
