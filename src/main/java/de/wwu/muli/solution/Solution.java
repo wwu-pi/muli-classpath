@@ -12,7 +12,7 @@ public class Solution<T> {
         this.testCase = null;
     }
 
-    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, Map<String, Object> cover) {
+    public Solution(T value, LinkedHashMap<String, Object> inputs, String className, String methodName, Map<String, int[]> cover) {
         this.value = value;
         this.testCase = new TestCase<>(inputs, value, className, methodName, cover);
     }

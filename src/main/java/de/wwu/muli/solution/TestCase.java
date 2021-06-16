@@ -1,9 +1,6 @@
 package de.wwu.muli.solution;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TestCase<T> {
     private static int testCounter = 0;
@@ -13,9 +10,9 @@ public class TestCase<T> {
     private final String fullClassName;
     private final LinkedHashMap<String, Object> inputs;
     private final T output;
-    private final Map<String, Object> cover;
+    private final Map<String, int[]> cover;
 
-    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, Map<String, Object> cover) {
+    public TestCase(LinkedHashMap<String, Object> inputs, T output, String fullClassName, String methodName, Map<String, int[]> cover) {
         testNumber = testCounter++;
         this.inputs = inputs;
         this.output = output;
@@ -67,7 +64,7 @@ public class TestCase<T> {
         return result;
     }
 
-    public Map<String, Object> getCoverMap(){
+    public Map<String, int[]> getCoverMap(){
         return cover;
     }
 
