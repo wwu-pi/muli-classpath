@@ -54,20 +54,15 @@ public class TestCase<T> {
         int i = 0;
         for(Map.Entry<String, Integer> entry : lengthMap.entrySet()) {
             String method = entry.getKey();
-            boolean[] coverageArray = new boolean[]{};
+            int[] coverageArray = new int[]{};
             if(cover.containsKey(method)){
-                coverageArray = (boolean[]) cover.get(method);
+                coverageArray = (int[]) cover.get(method);
             }
             int length = entry.getValue();
-            int j = 0;
-            int start = i;
-            while (i < start + length) {
-                if (j < coverageArray.length && coverageArray[j]) {
-                    result.set(i);
-                }
-                i++;
-                j++;
+            for(int j = 0; j < coverageArray.length; j++){
+                result.set(i + coverageArray[j]);
             }
+            i = i + length;
         }
         return result;
     }
