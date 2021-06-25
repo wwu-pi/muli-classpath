@@ -51,14 +51,18 @@ public class SimpleBackwardsTestSetReducer implements TestSetReducer {
             for(Map.Entry<String, int[]> entry : coverMap.entrySet()) {
                 int[] coverageArray = entry.getValue();
                 String method = entry.getKey();
-                int current_max = coverageArray[coverageArray.length-1];
-                if(lengthMap.containsKey(method)){
-                    int max = lengthMap.get(method);
-                    if(max < current_max){
+                if(coverageArray.length != 0){
+                    int current_max = coverageArray[coverageArray.length-1];
+                    if(lengthMap.containsKey(method)){
+                        int max = lengthMap.get(method);
+                        if(max < current_max){
+                            lengthMap.put(method, current_max);
+                        }
+                    } else {
                         lengthMap.put(method, current_max);
                     }
                 } else {
-                    lengthMap.put(method, current_max);
+                    lengthMap.put(method, 0);
                 }
             }
         }
